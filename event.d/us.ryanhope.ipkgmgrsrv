@@ -1,0 +1,8 @@
+description "IPKG Manager Service"
+
+start on started powerd
+
+console output
+
+exec /var/usr/bin/ipkgmgrsrv
+respawn

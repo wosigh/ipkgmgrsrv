@@ -1,0 +1,45 @@
+AC_INIT([ipkgmgrsrv],[0.0.1],[rmh3093@gmail.com],[ipkgmgrsrv])
+
+AC_CANONICAL_TARGET
+AC_CONFIG_AUX_DIR([.])
+
+AC_PROG_CC
+AC_LANG_C
+
+AM_INIT_AUTOMAKE
+
+if test -z "$PRE_DEV_ROOT"; then
+  PRE_DEV_ROOT="/usr/arm-none-linux-gnueabi"
+fi
+
+STD_INCLUDE_DIRS="-I${PRE_DEV_ROOT}/usr/include/ -I${PRE_DEV_ROOT}/include/"
+STD_LIB_DIRS="-Xlinker -rpath-link=${PRE_DEV_PATH}/usr/lib -L${PRE_DEV_ROOT}/lib -L${PRE_DEV_ROOT}/usr/lib"
+STD_CFLAGS="${STD_INCLUDE_DIRS} ${STD_LIB_DIRS}"
+
+GLIB_CFLAGS="-I${PRE_DEV_ROOT}/usr/include/mjson -I${PRE_DEV_ROOT}/usr/include/glib-2.0 -I${PRE_DEV_ROOT}/usr/lib/glib-2.0/include"
+
+PROJECT_CFLAGS="-Iinclude -L."
+
+CFLAGS="-g -Wall -D_GNU_SOURCE -DIPKG_LIB ${STD_CFLAGS} ${GLIB_CFLAGS} ${PROJECT_CFLAGS}"
+LDFLAGS="-lglib-2.0 -lmjson"
+
+case $target in
+  arm*)
+    LIBIPKG="libipkg-armv7.a"
+    CC=$target-gcc;
+    LDFLAGS="-llunaservice-armv7 ${LDFLAGS}";
+    CFLAGS="-march=armv7-a -mtune=cortex-a8 -Os -fPIC ${CFLAGS}";;
+  *)
+    LIBIPKG="libipkg-i686.a"
+    LDFLAGS="-llunaservice-i686 ${LDFLAGS}";
+    CFLAGS="-march=pentium3 -O2 -pipe -fPIC ${CFLAGS}";;
+esac
+        
+AC_PROG_MAKE_SET
+
+AC_SUBST(LIB_DIR)
+AC_SUBST(INC_DIR)
+AC_SUBST(LIBS)
+AC_SUBST(LIBIPKG)
+
+AC_OUTPUT(Makefile)

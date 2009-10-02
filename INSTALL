@@ -1,0 +1,8 @@
+For Cross-Compiling:
+====================
+
+export PRE_DEV_ROOT=<path to pre dev root>
+
+./autogen.sh
+./configure --host=<target>
+make
