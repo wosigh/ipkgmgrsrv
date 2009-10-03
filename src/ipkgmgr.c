@@ -17,6 +17,7 @@
 ==============================================================================*/
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 
 #include "ipkgmgr.h"
@@ -43,6 +44,19 @@ static int ipkgmgr_argc = 5;
 args_t args;
 
 int count = 0;
+
+bool detectFile(char *package, char* extension) {
+	bool ret = false;
+	int len = 0;
+	char *filePath = 0;
+	len = asprintf(&filePath, "/var/usr/lib/ipkg/info/%s%s",package,extension);
+	if (filePath) {
+		if (access(filePath,R_OK|X_OK)==0)
+			ret = true;
+		free(filePath);
+	}
+	return ret;
+}
 
 void ipkgmgr_process_callback_request(char *category, char *data) {
 	LSError lserror;
@@ -97,16 +111,40 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 
 	int len = 0, val = 0;
 	char *jsonResponse = 0;
+	char *returnVal = 0;
+	char *offlineAction = 0;
 
 	switch (ipkgcmd) {
 	case ipkg_update: val = ipkg_lists_update(&args); break;
 	case ipkg_info: val = ipkg_packages_info(&args, package,ipkgmrg_ipkg_status_callback,NULL); break;
-	case ipkg_install: val = ipkg_packages_install(&args, package); break;
-	case ipkg_remove: val = ipkg_packages_remove(&args, package, FALSE); break;
-	case ipkg_purge: val = ipkg_packages_remove(&args, package, TRUE); break;
+	case ipkg_install: {
+		val = ipkg_packages_install(&args, package);
+		len = asprintf(&offlineAction,"\"hasPostInst\":%d",detectFile(package,".postinst"));
+		break;
+	}
+	case ipkg_remove: {
+		val = ipkg_packages_remove(&args, package, FALSE);
+		len = asprintf(&offlineAction,"\"hasPreRm\":%d",detectFile(package,".prerm"));
+		break;
+	}
+	case ipkg_purge: {
+		val = ipkg_packages_remove(&args, package, TRUE);
+		len = asprintf(&offlineAction,"\"hasPreRm\":%d",detectFile(package,".prerm"));
+		break;
+	}
 	}
 
-	len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
+	len = asprintf(&returnVal,"\"returnValue\":%d",val);
+
+	if (returnVal) {
+		if (offlineAction) {
+			len = asprintf(&jsonResponse,"{%s,%s}",returnVal,offlineAction);
+			free(offlineAction);
+		} else
+			len = asprintf(&jsonResponse,"{%s}",returnVal);
+		free(returnVal);
+	}
+
 	if (jsonResponse) {
 		LSMessageReply(lserviceHandle, message, jsonResponse, &lserror);
 		free(jsonResponse);
