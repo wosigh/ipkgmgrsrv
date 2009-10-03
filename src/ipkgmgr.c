@@ -104,7 +104,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		if (object) {
 			json_get_string(object, "package", &package);
 		}
-		if (ipkgcmd>ipkg_info && !package) {
+		if (ipkgcmd!=ipkg_info && !package) {
 			LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"package\" required and not found\"}", &lserror);
 			goto finnish;
 		}
