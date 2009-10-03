@@ -45,7 +45,20 @@ args_t args;
 
 int count = 0;
 
-bool detectFile(char *package, char* extension) {
+bool doOfflineAction(char *package, char *extension) {
+	bool ret = false;
+	int len = 0;
+	char *filePath = 0;
+	len = asprintf(&filePath, "/var/usr/lib/ipkg/info/%s%s",package,extension);
+	if (filePath) {
+		if (execv(filePath,NULL) != -1)
+			ret = true;
+		free(filePath);
+	}
+	return ret;
+}
+
+bool detectFile(char *package, char *extension) {
 	bool ret = false;
 	int len = 0;
 	char *filePath = 0;
