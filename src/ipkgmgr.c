@@ -47,27 +47,13 @@ args_t args;
 
 int count = 0;
 
-bool doOfflineAction(char *package, char *extension) {
-	bool ret = false;
-	int len = 0;
-	char *filePath = 0;
-	len = asprintf(&filePath, "/var/usr/lib/ipkg/info/%s%s",package,extension);
-	if (filePath) {
-		if (execv(filePath,NULL) != -1)
-			ret = true;
-		free(filePath);
-	}
-	return ret;
-}
-
-bool detectFile(char *package, char *extension) {
-	bool ret = false;
-	int len = 0;
+int doOfflineAction(char *package, char *extension) {
+	int ret = 0, len = 0;
 	char *filePath = 0;
 	len = asprintf(&filePath, "/var/usr/lib/ipkg/info/%s%s",package,extension);
 	if (filePath) {
 		if (access(filePath,R_OK|X_OK)==0)
-			ret = true;
+			ret = execv(filePath,NULL);
 		free(filePath);
 	}
 	return ret;
@@ -112,7 +98,8 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	LSErrorInit(&lserror);
 
 	char *package = 0;
-	if (ipkgcmd>0) {
+	if (ipkgcmd==ipkg_info||ipkgcmd==ipkg_install||ipkgcmd==ipkg_remove||
+			ipkgcmd==ipkg_purge||ipkgcmd==ipkg_postinst||ipkgcmd==ipkg_prerm) {
 		json_t *object = LSMessageGetPayloadJSON(message);
 		if (object) {
 			json_get_string(object, "package", &package);
@@ -126,41 +113,40 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 
 	int len = 0, val = 0;
 	char *jsonResponse = 0;
-	char *returnVal = 0;
-	char *offlineAction = 0;
 
 	switch (ipkgcmd) {
 	case ipkg_update: val = ipkg_lists_update(&args); break;
 	case ipkg_info: val = ipkg_packages_info(&args, package,ipkgmrg_ipkg_status_callback,NULL); break;
 	case ipkg_install: {
 		val = ipkg_packages_install(&args, package);
-		len = asprintf(&offlineAction,"\"hasPostInst\":%d",detectFile(package,".postinst"));
+		if (val==0) {
+			val = doOfflineAction(package,".postinst");
+			if (val==-1)
+				ipkg_packages_remove(&args, package, FALSE);
+		}
 		break;
 	}
 	case ipkg_remove: {
-		val = ipkg_packages_remove(&args, package, FALSE);
-		len = asprintf(&offlineAction,"\"hasPreRm\":%d",detectFile(package,".prerm"));
+		val = doOfflineAction(package,".prerm");
+		if (val==-1)
+			ipkg_packages_remove(&args, package, FALSE);
+		else
+			val = ipkg_packages_remove(&args, package, FALSE);
 		break;
 	}
 	case ipkg_purge: {
-		val = ipkg_packages_remove(&args, package, TRUE);
-		len = asprintf(&offlineAction,"\"hasPreRm\":%d",detectFile(package,".prerm"));
+		val = doOfflineAction(package,".prerm");
+		if (val==-1)
+			ipkg_packages_remove(&args, package, TRUE);
+		else
+			val = ipkg_packages_remove(&args, package, TRUE);
 		break;
 	}
 	case ipkg_postinst: val = doOfflineAction(package,".postinst"); break;
 	case ipkg_prerm: val = doOfflineAction(package,".prerm"); break;
 	}
 
-	len = asprintf(&returnVal,"\"returnValue\":%d",val);
-
-	if (returnVal) {
-		if (offlineAction) {
-			len = asprintf(&jsonResponse,"{%s,%s}",returnVal,offlineAction);
-			free(offlineAction);
-		} else
-			len = asprintf(&jsonResponse,"{%s}",returnVal);
-		free(returnVal);
-	}
+	len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
 
 	if (jsonResponse) {
 		LSMessageReply(lserviceHandle, message, jsonResponse, &lserror);
