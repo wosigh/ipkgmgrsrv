@@ -9,7 +9,7 @@ LDFLAGS = @LDFLAGS@
 all: clean @PACKAGE@
 
 @PACKAGE@: src/main.c
-	$(CC) $(CFLAGS) $(LDFLAGS) src/main.c src/ipkgmgr.c $(LIBIPKG) -o @PACKAGE@
+	$(CC) $(CFLAGS) $(LDFLAGS) src/main.c src/ipkgmgr.c src/utils.c $(LIBIPKG) -o @PACKAGE@
 
 clean:
 	rm -f @PACKAGE@
