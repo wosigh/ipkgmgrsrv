@@ -27,6 +27,7 @@ case $target in
   arm*)
     LIBIPKG="libipkg-armv7.a"
     CC=$target-gcc;
+    LD=$target-ld;
     LDFLAGS="-llunaservice-armv7 ${LDFLAGS}";
     CFLAGS="-march=armv7-a -mtune=cortex-a8 -Os -fPIC ${CFLAGS}";;
   *)
