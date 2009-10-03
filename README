@@ -1,1 +1,17 @@
 See INSTALL for build instructions.
+
+
+-Method-						-Params-					-Subscription-
+================================================================================
+		
+/commands/update				-							-
+/commands/info					-							-
+/commands/install				package_id					-
+/commands/remove				package_id					-
+/commands/purge					package_id					-
+
+/offline_actions/doPostInst		package_id					-
+/offline_actions/doPreRm		package_id					-
+
+/callbacks/message				-							required
+/callbacks/status				-							required
