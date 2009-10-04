@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "ipkgmgr.h"
+#include "utils.h"
 
 typedef enum {
 	ipkg_update,
@@ -114,6 +115,10 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	int len = 0, val = 0;
 	char *jsonResponse = 0;
 
+	bool rootfs_writable = get_mountpoint_writability("/");
+	if (!rootfs_writable)
+		set_mountpoint_writability("/",true);
+
 	switch (ipkgcmd) {
 	case ipkg_update: val = ipkg_lists_update(&args); break;
 	case ipkg_info: val = ipkg_packages_info(&args, package,ipkgmrg_ipkg_status_callback,NULL); break;
@@ -145,6 +150,9 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	case ipkg_postinst: val = doOfflineAction(package,".postinst"); break;
 	case ipkg_prerm: val = doOfflineAction(package,".prerm"); break;
 	}
+
+	if (!rootfs_writable)
+		set_mountpoint_writability("/",false);
 
 	len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
 
@@ -264,9 +272,8 @@ bool ipkgmgr_init() {
 	args_init(&args);
 	args_parse(&args, ipkgmgr_argc, ipkgmgr_argv);
 
-	if (verbose) {
+	if (verbose)
 		g_message("Registering category: /callbacks");
-	}
 	retVal = LSRegisterCategory(lserviceHandle, "/callbacks", ipkgmgr_callback_methods, 0, NULL, &lserror);
 	if (!retVal) {
 		if (verbose)
@@ -277,9 +284,8 @@ bool ipkgmgr_init() {
 			g_message("Succeeded.");
 	}
 
-	if (verbose) {
+	if (verbose)
 		g_message("Registering category: /commands");
-	}
 	retVal = LSRegisterCategory(lserviceHandle, "/commands", ipkgmgr_command_methods, 0, NULL, &lserror);
 	if (!retVal) {
 		if (verbose)
@@ -290,18 +296,17 @@ bool ipkgmgr_init() {
 			g_message("Succeeded.");
 	}
 
-	if (verbose) {
-			g_message("Registering category: /offline_actions");
-		}
-		retVal = LSRegisterCategory(lserviceHandle, "/offline_actions", ipkgmgr_offline_action_methods, 0, NULL, &lserror);
-		if (!retVal) {
-			if (verbose)
-				g_message("Failed.");
-			goto error;
-		} else {
-			if (verbose)
-				g_message("Succeeded.");
-		}
+	if (verbose)
+		g_message("Registering category: /offline_actions");
+	retVal = LSRegisterCategory(lserviceHandle, "/offline_actions", ipkgmgr_offline_action_methods, 0, NULL, &lserror);
+	if (!retVal) {
+		if (verbose)
+			g_message("Failed.");
+		goto error;
+	} else {
+		if (verbose)
+			g_message("Succeeded.");
+	}
 
 	error: if (LSErrorIsSet(&lserror)) {
 		LSErrorPrint(&lserror, stderr);

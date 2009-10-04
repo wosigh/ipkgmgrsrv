@@ -23,7 +23,7 @@
 
 #include <sys/mount.h>
 
-bool get_mountpoint_writeability(char *mountpoint) {
+bool get_mountpoint_writability(char *mountpoint) {
 
 	FILE *fp;
 
@@ -59,7 +59,7 @@ bool get_mountpoint_writeability(char *mountpoint) {
 
 }
 
-bool set_mountpoint_writeability(char *mountpoint, bool writable) {
+bool set_mountpoint_writability(char *mountpoint, bool writable) {
 
 	int ret = 0;
 
