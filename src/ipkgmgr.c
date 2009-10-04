@@ -293,7 +293,7 @@ bool ipkgmgr_init() {
 	if (verbose) {
 			g_message("Registering category: /offline_actions");
 		}
-		retVal = LSRegisterCategory(lserviceHandle, "/offline_actions", ipkgmgr_command_methods, 0, NULL, &lserror);
+		retVal = LSRegisterCategory(lserviceHandle, "/offline_actions", ipkgmgr_offline_action_methods, 0, NULL, &lserror);
 		if (!retVal) {
 			if (verbose)
 				g_message("Failed.");
