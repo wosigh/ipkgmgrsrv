@@ -21,6 +21,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <sys/mount.h>
+
 bool get_mountpoint_writeability(char *mountpoint) {
 
 	FILE *fp;
@@ -54,4 +56,21 @@ bool get_mountpoint_writeability(char *mountpoint) {
 	}
 
 	return false;
+
+}
+
+bool set_mountpoint_writeability(char *mountpoint, bool writable) {
+
+	int ret = 0;
+
+	if (writable)
+		ret = mount(NULL,mountpoint,NULL,MS_REMOUNT,NULL);
+	else
+		ret = mount(NULL,mountpoint,NULL,MS_REMOUNT|MS_RDONLY,NULL);
+
+	if (ret==0)
+		return true;
+	else
+		return false;
+
 }
