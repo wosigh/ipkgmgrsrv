@@ -16,12 +16,12 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 ==============================================================================*/
 
-#ifndef IPKGMGR_H_
-#define IPKGMGR_H_
+#ifndef UTILS_H_
+#define UTILS_H_
 
 #include "ipkgmgrsrv.h"
 
 bool get_mountpoint_writability(char *mountpoint);
 bool set_mountpoint_writability(char *mountpoint, bool writable);
 
-#endif /* IPKGMGR_H_ */
+#endif /* UTILS_H_ */

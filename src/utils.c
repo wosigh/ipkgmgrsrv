@@ -74,3 +74,36 @@ bool set_mountpoint_writability(char *mountpoint, bool writable) {
 		return false;
 
 }
+
+bool is_emulator() {
+
+	bool ret = false;
+
+	FILE *fp;
+
+	if((fp=fopen("/etc/palm-build-info", "r")) != NULL) {
+
+		char *i = 0;
+		char line[512];
+		char *delim = "=";
+		char *token = 0;
+
+		while (!feof(fp)) {
+			i = fgets(line, 512, fp);
+			token = strtok(line,delim);
+			if (strcmp(token,"BUILDNAME"))
+				token = strtok(NULL,delim);
+			else
+				continue;
+			if (strcmp(token,"Nova-SDK"))
+				ret = true;
+			break;
+		}
+
+		fclose(fp);
+
+	}
+
+	return ret;
+
+}
