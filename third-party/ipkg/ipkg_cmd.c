@@ -501,12 +501,17 @@ static int ipkg_install_cmd(ipkg_conf_t *conf, int argc, char **argv)
 			    "Check the spelling or perhaps run 'ipkg update'\n",
 			    arg);
 	  }
+	  /* if an error occurs, exit with error */
+	  if (err) {
+	       return err;
+	  }
      }
 
      /* recheck to verify that all dependences are satisfied */
      if (0) ipkg_satisfy_all_dependences(conf);
 
-     ipkg_configure_packages(conf, NULL);
+     /* error when flashing modem will return an error here */
+     err = ipkg_configure_packages(conf, NULL);
 
      write_status_files_if_changed(conf);
 
