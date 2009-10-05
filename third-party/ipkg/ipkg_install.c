@@ -211,6 +211,7 @@ ipkg_error_t ipkg_install_by_name(ipkg_conf_t *conf, const char *pkg_name)
 	anyone ever wants to make a nice libipkg. */
 
      ipkg_message(conf, IPKG_DEBUG2,"Function: %s calling ipkg_install_pkg \n",__FUNCTION__);
+     new->is_processing = 1;
      return ipkg_install_pkg(conf, new,0);
 }
 

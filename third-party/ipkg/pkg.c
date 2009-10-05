@@ -33,6 +33,7 @@
 #include "xsystem.h"
 #include "ipkg_conf.h"
 
+
 typedef struct enum_map enum_map_t;
 struct enum_map
 {
@@ -522,6 +523,10 @@ char * pkg_formatted_info(pkg_t *pkg )
      strncat(buff ,line, strlen(line));
      free(line);
 
+     line = pkg_formatted_field(pkg, "Installed-Size");
+     strncat(buff ,line, strlen(line));
+     free(line);
+     
      return buff;
 }
 
@@ -542,7 +547,6 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
      }
 
      temp[0]='\0'; 
-
      switch (field[0])
      {
      case 'a':
@@ -690,13 +694,42 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
      case 'I': {
 	  if (strcasecmp(field, "Installed-Size") == 0) {
 	       /* Installed-Size */
-               temp = (char *)realloc(temp,strlen(pkg->installed_size)+17);
-               if ( temp == NULL ){
-	           fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
-	           return NULL;
-               }
-               temp[0]='\0';
-               snprintf(temp, (strlen(pkg->installed_size)+17), "Installed-Size: %s\n", pkg->installed_size);
+	       if (pkg->installed_size) {
+                  temp = (char *)realloc(temp,strlen(pkg->installed_size)+18);
+                  if ( temp == NULL ){
+	             fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
+	             return NULL;
+                  }
+                  temp[0]='\0';
+                  snprintf(temp, (strlen(pkg->installed_size)+18), "Installed-Size: %s\n", pkg->installed_size);
+	       } else {
+	          /* Caculate installed files size */
+	          str_list_elt_t *iter;
+		  struct stat buf;
+		  int installed_files_length = 0;
+		  if (pkg->installed_files == NULL)
+		     break;
+
+		  if (pkg->is_processing!=1) 
+		     break;
+		  
+	          for (iter = pkg->installed_files->head; iter; iter = iter->next) {
+		     memset(&buf, 0, sizeof(struct stat));
+		     stat(iter->data, &buf);
+		     if (S_ISREG(buf.st_mode))
+		        installed_files_length += buf.st_size;
+	          }
+		  /*printf("installed_files_length:%d\n", installed_files_length);*/
+	          
+		  sprintf_alloc(&pkg->installed_size, "%d", installed_files_length);
+                  temp = (char *)realloc(temp,strlen(pkg->installed_size)+18);
+                  if ( temp == NULL ){
+	             fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
+	             return NULL;
+                  }
+                  temp[0]='\0';
+                  snprintf(temp, (strlen(pkg->installed_size)+18), "Installed-Size: %s\n", pkg->installed_size);
+	       }
 	  } else if (strcasecmp(field, "Installed-Time") == 0 && pkg->installed_time) {
                temp = (char *)realloc(temp,29);
                if ( temp == NULL ){
@@ -720,7 +753,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 	              return NULL;
                    }
                    temp[0]='\0';
-                   snprintf(temp, (strlen(pkg->maintainer)+14), "maintainer: %s\n", pkg->maintainer);
+                   snprintf(temp, (strlen(pkg->maintainer)+14), "Maintainer: %s\n", pkg->maintainer);
 	       }
 	  } else if (strcasecmp(field, "MD5sum") == 0) {
 	       /* MD5sum */
@@ -871,6 +904,24 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                    }
                    temp[0]='\0';
                    snprintf(temp, (strlen(pkg->size)+8), "Size: %s\n", pkg->size);
+	       } else {
+                  if ( pkg->local_filename ) {
+                     struct stat buf;
+		     memset(&buf, 0, sizeof(struct stat));
+		     
+		     if ( stat(pkg->local_filename, &buf) == 0 ) {
+
+		        sprintf_alloc(&pkg->size, "%d", buf.st_size);
+                        temp = (char *)realloc(temp, strlen(pkg->size)+8);
+                        if ( temp == NULL ){
+                           fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
+                           return NULL;
+                        }
+                        temp[0]='\0';
+                        snprintf(temp, (strlen(pkg->size)+8), "Size: %s\n", pkg->size);
+		     }
+                  }
+		       
 	       }
 	  } else if (strcasecmp(field, "Source") == 0) {
 	       /* Source */
@@ -1016,6 +1067,12 @@ void pkg_print_status(pkg_t * pkg, FILE * file)
      pkg_print_field(pkg, file, "Essential"); /* @@@@ should be removed in future release. */
      pkg_print_field(pkg, file, "Architecture");
      pkg_print_field(pkg, file, "Conffiles");
+     pkg_print_field(pkg, file, "Description");
+     pkg_print_field(pkg, file, "Maintainer");
+     pkg_print_field(pkg, file, "Section");
+     pkg_print_field(pkg, file, "Size");
+     pkg_print_field(pkg, file, "Filename");
+     pkg_print_field(pkg, file, "Installed-Size");
      pkg_print_field(pkg, file, "Installed-Time");
      fputs("\n", file);
 }

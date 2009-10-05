@@ -176,6 +176,10 @@ struct pkg
      int arch_priority;
 /* Adding this flag, to "force" ipkg to choose a "provided_by_hand" package, if there are multiple choice */
      int provided_by_hand;
+
+     /* Check whether this pkg is being removed or installed */
+     int is_processing;
+     
 };
 
 pkg_t *pkg_new(void);
