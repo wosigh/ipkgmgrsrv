@@ -23,7 +23,7 @@ STD_CFLAGS="${CS_LIB_DIR} ${STD_INCLUDE_DIRS} ${STD_LIB_DIRS}"
 
 GLIB_CFLAGS="-I${PRE_DEV_ROOT}/usr/include/mjson -I${PRE_DEV_ROOT}/usr/include/glib-2.0 -I${PRE_DEV_ROOT}/usr/lib/glib-2.0/include"
 
-PROJECT_CFLAGS="-Iinclude -L."
+PROJECT_CFLAGS="-Iinclude -Iinclude/liblunaservice -L."
 
 CFLAGS="-g -Wall -D_GNU_SOURCE -DIPKG_LIB ${STD_CFLAGS} ${GLIB_CFLAGS} ${PROJECT_CFLAGS}"
 LDFLAGS="-lglib-2.0 -lmjson"
