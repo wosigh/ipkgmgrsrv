@@ -237,7 +237,10 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
 	  conf->force_depends = 1;
      }
      if (args->force_depends_palm) {
-	  conf->force_depends_palm = 1;
+      conf->force_depends_palm = 1;
+     }
+     if (args->force_space) {
+      conf->force_space = 1;
      }
      if (args->force_defaults) {
 	  conf->force_defaults = 1;
