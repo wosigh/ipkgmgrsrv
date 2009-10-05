@@ -4,7 +4,7 @@ SUBDIRS = etc familiar libbb
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@
 IPKGLIBDIR=@ipkglibdir@ 
-ALL_CFLAGS=-g -O -Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DIPKGLIBDIR=\"@ipkglibdir@\" -DDATADIR=\"@datadir@\"
+ALL_CFLAGS=-g -O -Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DIPKGLIBDIR=\"@ipkglibdir@\" -DDATADIR=\"@datadir@\" -lcurl
 
 bin_PROGRAMS = ipkg-cl
 
