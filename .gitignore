@@ -4,10 +4,3 @@ autom4te.cache
 obj
 .cproject
 .project
-Makefile
-Makefile.in
-configure
-config.*
-missing
-install-sh
-aclocal.m4
