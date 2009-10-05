@@ -332,14 +332,14 @@ file_header_t *get_header_ar(FILE *src_stream)
 		/* some version of ar, have an extra '\n' after each data entry,
 		 * this puts the next header out by 1 */
 		if (ar.formated.magic[1] != '`') {
-			error_msg("Invalid magic");
+			error_msg_and_die("Invalid magic");
 			return(NULL);
 		}
 		/* read the next char out of what would be the data section,
 		 * if its a '\n' then it is a valid header offset by 1*/
 		archive_offset++;
 		if (fgetc(src_stream) != '\n') {
-			error_msg("Invalid magic");
+			error_msg_and_die("Invalid magic");
 			return(NULL);
 		}
 		/* fix up the header, we started reading 1 byte too early */
@@ -443,7 +443,7 @@ file_header_t *get_header_cpio(FILE *src_stream)
 	if (fread(cpio_header, 1, 110, src_stream) == 110) {
 		archive_offset += 110;
 		if (strncmp(cpio_header, "07070", 5) != 0) {
-			error_msg("Unsupported format or invalid magic");
+			error_msg_and_die("Unsupported format or invalid magic");
 			return(NULL);
 		}
 		switch (cpio_header[5]) {
@@ -510,11 +510,11 @@ file_header_t *get_header_cpio(FILE *src_stream)
 				cpio_entry->device = (major << 8) | minor;
 				break;
 			default:
-				error_msg("Unsupported format");
+				error_msg_and_die("Unsupported format");
 				return(NULL);
 		}
 		if (ferror(src_stream) || feof(src_stream)) {
-			perror_msg("Stream error");
+			perror_msg_and_die("Stream error");
 			return(NULL);
 		}
 	}
@@ -585,7 +585,7 @@ file_header_t *get_header_tar(FILE *tar_stream)
 	}
 	if (sum != strtol(tar.formated.chksum, NULL, 8)) {
 		if ( strtol(tar.formated.chksum,NULL,8) != 0 )
-			error_msg("Invalid tar header checksum");
+			error_msg_and_die("Invalid tar header checksum");
                 return(NULL);
         }
 
@@ -806,7 +806,11 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
                 /*fprintf(stderr, __FUNCTION__ ":%d: done\n", __LINE__);*/
 		return output_buffer; 
 	} else {
-		error_msg_and_die("invalid magic");
+                /* Do not call error_msg_and_die here, which kills the 
+                 * software update.  PmUpdater needs to be informed, and 
+                 * perform the necessary clean up. */                    
+		error_msg("invalid magic");
+                return NULL;
 	}
 
 }

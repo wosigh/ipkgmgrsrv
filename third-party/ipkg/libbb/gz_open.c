@@ -32,6 +32,7 @@
 extern FILE *gz_open(FILE *compressed_file, int *pid)
 {
 	int unzip_pipe[2];
+	int err = 0;
 
 	if (pipe(unzip_pipe)!=0) {
 		error_msg("pipe error");
@@ -44,11 +45,11 @@ extern FILE *gz_open(FILE *compressed_file, int *pid)
 	if (*pid==0) {
 		/* child process */
 		close(unzip_pipe[0]);
-		unzip(compressed_file, fdopen(unzip_pipe[1], "w"));
+		err = unzip(compressed_file, fdopen(unzip_pipe[1], "w"));
 		fflush(NULL);
 		fclose(compressed_file);
 		close(unzip_pipe[1]);
-		exit(EXIT_SUCCESS);
+		exit(err ? EXIT_FAILURE : EXIT_SUCCESS);
 	}
 	close(unzip_pipe[1]);
 	if (unzip_pipe[0] == -1) {

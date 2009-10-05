@@ -117,7 +117,7 @@ static const unsigned short mask_bits[] = {
  
 static void abort_gzip()
 {
-	error_msg("gzip aborted\n");
+	error_msg_and_die("gzip aborted\n");
 	exit(ERROR);
 }
 
@@ -939,7 +939,7 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 
 	/* Magic header for gzip files, 1F 8B = \037\213 */
 	if (memcmp(magic, "\037\213", 2) != 0) {
-		error_msg("Invalid gzip magic");
+		error_msg_and_die("Invalid gzip magic");
 		return EXIT_FAILURE;
 	}
 
@@ -1008,12 +1008,12 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 
 	/* Validate decompression - crc */
 	if (!exit_code && (unsigned int)((buf[0] | (buf[1] << 8)) |((buf[2] | (buf[3] << 8)) << 16)) != (crc ^ 0xffffffffL)) {
-		error_msg("invalid compressed data--crc error");
+		error_msg_and_die("invalid compressed data--crc error");
 		exit_code = 1;
 	}
 	/* Validate decompression - size */
 	if (!exit_code && ((buf[4] | (buf[5] << 8)) |((buf[6] | (buf[7] << 8)) << 16)) != (unsigned long) bytes_out) {
-		error_msg("invalid compressed data--length error");
+		error_msg_and_die("invalid compressed data--length error");
 		exit_code = 1;
 	}
 
@@ -1024,7 +1024,7 @@ extern int unzip(FILE *l_in_file, FILE *l_out_file)
 }
 
 /*
- * This needs access to global variables wondow and crc_table, so its not in its own file.
+ * This needs access to global variables window and crc_table, so its not in its own file.
  */
 extern void gz_close(int gunzip_pid)
 {
@@ -1033,9 +1033,14 @@ extern void gz_close(int gunzip_pid)
 			error_msg_and_die("***  Couldnt kill old gunzip process *** aborting");
 		}
 
-		if (waitpid(gunzip_pid, NULL, 0) == -1) {
+                int status;
+		if (waitpid(gunzip_pid, &status, 0) == -1) {
 			printf("Couldnt wait ?");
 		}
+
+                if (EXIT_SUCCESS != WEXITSTATUS(status)) {
+                    error_msg_and_die("gz_close: child exit failure");
+                }
 	}
 	free(window);
 	free(crc_table);

@@ -481,7 +481,7 @@ static int ipkg_install_cmd(ipkg_conf_t *conf, int argc, char **argv)
 
           ipkg_message(conf, IPKG_DEBUG2, "Debug install_cmd: %s  \n",arg );
           err = ipkg_prepare_url_for_install(conf, arg, &argv[i]);
-          if (err != EINVAL && err != 0)
+          if (err != 0)
               return err;
      }
      pkg_info_preinstall_check(conf);
