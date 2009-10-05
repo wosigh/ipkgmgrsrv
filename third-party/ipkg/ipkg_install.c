@@ -759,6 +759,8 @@ int ipkg_install_pkg(ipkg_conf_t *conf, pkg_t *pkg, int from_upgrade)
 	  return -EINVAL;
      }
 
+     ipkg_message(conf, IPKG_NOTICE, "Begin installation of %s\n", pkg->name);
+
      ipkg_message(conf, IPKG_DEBUG2, "Function: %s calling pkg_arch_supported %s \n", __FUNCTION__, __FUNCTION__);
 
      if (!pkg_arch_supported(conf, pkg)) {
