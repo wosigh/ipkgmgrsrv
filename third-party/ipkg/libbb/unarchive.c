@@ -323,6 +323,7 @@ file_header_t *get_header_ar(FILE *src_stream)
 	static char *ar_long_names;
 
 	if (fread(ar.raw, 1, 60, src_stream) != 60) {
+	    error_msg_and_die("Archive truncated");
 		return(NULL);
 	}
 	archive_offset += 60;
@@ -753,6 +754,7 @@ char *deb_extract(const char *package_filename, FILE *out_stream,
 				uncompressed_stream = gz_open(deb_stream, &gunzip_pid);
 				archive_offset = 0;
 				output_buffer = unarchive(uncompressed_stream, out_stream, get_header_tar, free_header_tar, extract_function, prefix, file_list);
+				break;
 			}
 			seek_sub_file(deb_stream, ar_header->size);
 		}
