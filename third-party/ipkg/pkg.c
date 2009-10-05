@@ -121,7 +121,7 @@ int pkg_init(pkg_t *pkg)
      /* added for replaces.  Jamey 7/23/2002 */
      pkg->replaces = NULL;
      pkg->replaces_count = 0;
-    
+
      pkg->pre_depends_count = 0;
      pkg->pre_depends_str = NULL;
      pkg->provides_count = 0;
@@ -219,7 +219,7 @@ int pkg_init_from_file(pkg_t *pkg, const char *filename)
      if (err) { return err; }
 
      pkg->local_filename = strdup(filename);
-    
+
      control_file = tmpfile();
      err = pkg_extract_control_file_to_stream(pkg, control_file);
      if (err) { return err; }
@@ -237,8 +237,8 @@ int pkg_init_from_file(pkg_t *pkg, const char *filename)
 /* XXX: CLEANUP: This function shouldn't actually modify anything in
    newpkg, but should leave it usable. This rework is so that
    pkg_hash_insert doesn't clobber the pkg that you pass into it. */
-/* 
- * uh, i thought that i had originally written this so that it took 
+/*
+ * uh, i thought that i had originally written this so that it took
  * two pkgs and returned a new one?  we can do that again... -sma
  */
 int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
@@ -332,7 +332,7 @@ int pkg_merge(pkg_t *oldpkg, pkg_t *newpkg, int set_status)
      if (!oldpkg->filename)
 	  oldpkg->filename = str_dup_safe(newpkg->filename);
      if (0)
-     fprintf(stdout, "pkg=%s old local_filename=%s new local_filename=%s\n", 
+     fprintf(stdout, "pkg=%s old local_filename=%s new local_filename=%s\n",
 	     oldpkg->name, oldpkg->local_filename, newpkg->local_filename);
      if (!oldpkg->local_filename)
 	  oldpkg->local_filename = str_dup_safe(newpkg->local_filename);
@@ -374,7 +374,7 @@ abstract_pkg_t *abstract_pkg_new(void)
 	  return NULL;
      }
 
-     if ( abstract_pkg_init(ab_pkg) < 0 ) 
+     if ( abstract_pkg_init(ab_pkg) < 0 )
         return NULL;
 
      return ab_pkg;
@@ -397,7 +397,7 @@ int abstract_pkg_init(abstract_pkg_t *ab_pkg)
 void set_flags_from_control(ipkg_conf_t *conf, pkg_t *pkg){
      char * temp_str;
      char **raw =NULL;
-     char **raw_start=NULL; 
+     char **raw_start=NULL;
 
      temp_str = (char *) malloc (strlen(pkg->dest->info_dir)+strlen(pkg->name)+12);
      if (temp_str == NULL ){
@@ -405,7 +405,7 @@ void set_flags_from_control(ipkg_conf_t *conf, pkg_t *pkg){
         return;
      }
      sprintf( temp_str,"%s/%s.control",pkg->dest->info_dir,pkg->name);
-   
+
      raw = raw_start = read_raw_pkgs_from_file(temp_str);
      if (raw == NULL ){
         ipkg_message(conf, IPKG_ERROR, "Unable to open the control file in  %s\n", __FUNCTION__);
@@ -423,7 +423,7 @@ void set_flags_from_control(ipkg_conf_t *conf, pkg_t *pkg){
           free(*raw++);
      }
 
-     free(raw_start); 
+     free(raw_start);
      free(temp_str);
 
      return ;
@@ -435,7 +435,7 @@ char * pkg_formatted_info(pkg_t *pkg )
      char *line;
      char * buff;
 
-     buff = malloc(8192);
+     buff = malloc(16384);
      if (buff == NULL) {
 	  fprintf(stderr, "%s: out of memory\n", __FUNCTION__);
 	  return NULL;
@@ -454,7 +454,7 @@ char * pkg_formatted_info(pkg_t *pkg )
      line = pkg_formatted_field(pkg, "Depends");
      strncat(buff ,line, strlen(line));
      free(line);
-     
+
      line = pkg_formatted_field(pkg, "Recommends");
      strncat(buff ,line, strlen(line));
      free(line);
@@ -526,7 +526,7 @@ char * pkg_formatted_info(pkg_t *pkg )
      line = pkg_formatted_field(pkg, "Installed-Size");
      strncat(buff ,line, strlen(line));
      free(line);
-     
+
      return buff;
 }
 
@@ -538,7 +538,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
      int flag_provide_false = 0;
 
 /*
-  Pigi: After some discussion with Florian we decided to modify the full procedure in 
+  Pigi: After some discussion with Florian we decided to modify the full procedure in
         dynamic memory allocation. This should avoid any other segv in this area ( except for bugs )
 */
 
@@ -546,7 +546,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 	  goto UNKNOWN_FMT_FIELD;
      }
 
-     temp[0]='\0'; 
+     temp[0]='\0';
      switch (field[0])
      {
      case 'a':
@@ -593,7 +593,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 	       for (iter = pkg->conffiles.head; iter; iter = iter->next) {
 		    if (iter->data->name && iter->data->value) {
                          snprintf(confstr, LINE_LEN, "%s %s\n", iter->data->name, iter->data->value);
-                         strncat(temp, confstr, strlen(confstr));           
+                         strncat(temp, confstr, strlen(confstr));
 		    }
 	       }
 	  } else if (strcasecmp(field, "Conflicts") == 0) {
@@ -614,9 +614,9 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                     strncpy(temp, "Conflicts:", 11);
 		    for(i = 0; i < pkg->conflicts_count; i++) {
                         snprintf(conflictstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->conflicts_str[i]);
-                        strncat(temp, conflictstr, strlen(conflictstr));           
+                        strncat(temp, conflictstr, strlen(conflictstr));
                     }
-                    strncat(temp, "\n", strlen("\n")); 
+                    strncat(temp, "\n", strlen("\n"));
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
@@ -643,9 +643,9 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                     strncpy(temp, "Depends:", 10);
 		    for(i = 0; i < pkg->depends_count; i++) {
                         snprintf(depstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->depends_str[i]);
-                        strncat(temp, depstr, strlen(depstr));           
+                        strncat(temp, depstr, strlen(depstr));
                     }
-                    strncat(temp, "\n", strlen("\n")); 
+                    strncat(temp, "\n", strlen("\n"));
 	       }
 	  } else if (strcasecmp(field, "Description") == 0) {
 	       /* Description */
@@ -710,9 +710,9 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 		  if (pkg->installed_files == NULL)
 		     break;
 
-		  if (pkg->is_processing!=1) 
+		  if (pkg->is_processing!=1)
 		     break;
-		  
+
 	          for (iter = pkg->installed_files->head; iter; iter = iter->next) {
 		     memset(&buf, 0, sizeof(struct stat));
 		     stat(iter->data, &buf);
@@ -720,7 +720,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 		        installed_files_length += buf.st_size;
 	          }
 		  /*printf("installed_files_length:%d\n", installed_files_length);*/
-	          
+
 		  sprintf_alloc(&pkg->installed_size, "%d", installed_files_length);
                   temp = (char *)realloc(temp,strlen(pkg->installed_size)+18);
                   if ( temp == NULL ){
@@ -820,10 +820,10 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
 		     for(i = 0; i < pkg->provides_count; i++) {
                          if (strlen(pkg->provides_str[i])>0){;
                             snprintf(provstr, LINE_LEN, "%s %s", i == 1 ? "" : ",", pkg->provides_str[i]);
-                            strncat(temp, provstr, strlen(provstr));           
+                            strncat(temp, provstr, strlen(provstr));
                          }
                      }
-                     strncat(temp, "\n", strlen("\n")); 
+                     strncat(temp, "\n", strlen("\n"));
                   }
                }
 	  } else {
@@ -851,9 +851,9 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                     strncpy(temp, "Replaces:", 12);
 		    for (i = 0; i < pkg->replaces_count; i++) {
                         snprintf(replstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->replaces_str[i]);
-                        strncat(temp, replstr, strlen(replstr));           
+                        strncat(temp, replstr, strlen(replstr));
                     }
-                    strncat(temp, "\n", strlen("\n")); 
+                    strncat(temp, "\n", strlen("\n"));
 	       }
 	  } else if (strcasecmp (field, "Recommends") == 0) {
 	       if (pkg->recommends_count) {
@@ -871,9 +871,9 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                     strncpy(temp, "Recommends:", 13);
 		    for(i = 0; i < pkg->recommends_count; i++) {
                         snprintf(recstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->recommends_str[i]);
-                        strncat(temp, recstr, strlen(recstr));           
+                        strncat(temp, recstr, strlen(recstr));
                     }
-                    strncat(temp, "\n", strlen("\n")); 
+                    strncat(temp, "\n", strlen("\n"));
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
@@ -908,7 +908,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                   if ( pkg->local_filename ) {
                      struct stat buf;
 		     memset(&buf, 0, sizeof(struct stat));
-		     
+
 		     if ( stat(pkg->local_filename, &buf) == 0 ) {
 
 		        sprintf_alloc(&pkg->size, "%d", buf.st_size);
@@ -921,7 +921,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                         snprintf(temp, (strlen(pkg->size)+8), "Size: %s\n", pkg->size);
 		     }
                   }
-		       
+
 	       }
 	  } else if (strcasecmp(field, "Source") == 0) {
 	       /* Source */
@@ -936,7 +936,7 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                }
 	  } else if (strcasecmp(field, "Status") == 0) {
 	       /* Status */
-               /* Benjamin Pineau note: we should avoid direct usage of 
+               /* Benjamin Pineau note: we should avoid direct usage of
                 * strlen(arg) without keeping "arg" for later free()
                 */
                char *pflag=pkg_state_flag_to_str(pkg->state_flag);
@@ -972,9 +972,9 @@ char * pkg_formatted_field(pkg_t *pkg, const char *field )
                     strncpy(temp, "Suggests:", 10);
 		    for(i = 0; i < pkg->suggests_count; i++) {
                         snprintf(sugstr, LINE_LEN, "%s %s", i == 0 ? "" : ",", pkg->suggests_str[i]);
-                        strncat(temp, sugstr, strlen(sugstr));           
+                        strncat(temp, sugstr, strlen(sugstr));
                     }
-                    strncat(temp, "\n", strlen("\n")); 
+                    strncat(temp, "\n", strlen("\n"));
 	       }
 	  } else {
 	       goto UNKNOWN_FMT_FIELD;
@@ -1021,11 +1021,11 @@ void pkg_print_info(pkg_t *pkg, FILE *file)
      }
 
      buff = pkg_formatted_info(pkg);
-     if ( buff == NULL ) 
+     if ( buff == NULL )
          return;
      if (strlen(buff)>2){
          fwrite(buff, 1, strlen(buff), file);
-     } 
+     }
      free(buff);
 }
 
@@ -1134,7 +1134,7 @@ int verrevcmp(const char *val, const char *ref)
      long vl, rl;
      const char *vp, *rp;
      const char *vsep, *rsep;
-    
+
      if (!val) val= "";
      if (!ref) ref= "";
      for (;;) {
@@ -1208,7 +1208,7 @@ int pkg_name_version_and_architecture_compare(void *p1, void *p2)
 	       a, a->name, b, b->name);
        return 0;
      }
-       
+
      namecmp = strcmp(a->name, b->name);
      if (namecmp)
 	  return namecmp;
@@ -1348,7 +1348,7 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
      rootdirlen = strlen( pkg->dest->root_dir );
      while (1) {
 	  char *file_name;
-	
+
 	  line = file_read_line_alloc(list_file);
 	  if (line == NULL) {
 	       break;
@@ -1357,8 +1357,8 @@ str_list_t *pkg_get_installed_files(pkg_t *pkg)
 	  file_name = line;
 
 	  /* Take pains to avoid uglies like "/./" in the middle of file_name. */
-	  if( strncmp( pkg->dest->root_dir, 
-		       file_name, 
+	  if( strncmp( pkg->dest->root_dir,
+		       file_name,
 		       rootdirlen ) ) {
 	       if (*file_name == '.') {
 		    file_name++;
@@ -1696,9 +1696,9 @@ int pkg_info_preinstall_check(ipkg_conf_t *conf)
 	  if (!pkg)
 	       continue;
 	  // ipkg_message(conf, IPKG_DEBUG2, " package %s version=%s arch=%p:", pkg->name, pkg->version, pkg->architecture);
-	  if (pkg->architecture) 
+	  if (pkg->architecture)
 	       arch_priority = pkg_get_arch_priority(conf, pkg->architecture);
-	  else 
+	  else
 	       ipkg_message(conf, IPKG_ERROR, "pkg_info_preinstall_check: no architecture for package %s\n", pkg->name);
 	  // ipkg_message(conf, IPKG_DEBUG2, "%s arch_priority=%d\n", pkg->architecture, arch_priority);
 	  pkg->arch_priority = arch_priority;
@@ -1708,7 +1708,7 @@ int pkg_info_preinstall_check(ipkg_conf_t *conf)
 	  pkg_t *pkg = available_pkgs->pkgs[i];
 	  if (!pkg->arch_priority && (pkg->state_flag || (pkg->state_want != SW_UNKNOWN))) {
 	       /* clear flags and want for any uninstallable package */
-	       ipkg_message(conf, IPKG_NOTICE, "Clearing state_want and state_flag for pkg=%s (arch_priority=%d flag=%d want=%d)\n", 
+	       ipkg_message(conf, IPKG_NOTICE, "Clearing state_want and state_flag for pkg=%s (arch_priority=%d flag=%d want=%d)\n",
 			    pkg->name, pkg->arch_priority, pkg->state_flag, pkg->state_want);
 	       pkg->state_want = SW_UNKNOWN;
 	       pkg->state_flag = 0;
