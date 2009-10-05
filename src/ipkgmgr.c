@@ -118,7 +118,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	char *jsonResponse = 0;
 
 	bool rootfs_writable = get_mountpoint_writability("/");
-	if (!rootfs_writable)
+	if (!is_emulator() && !rootfs_writable)
 		set_mountpoint_writability("/",true);
 
 	switch (ipkgcmd) {
@@ -153,7 +153,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	case ipkg_prerm: val = doOfflineAction(package,".prerm"); break;
 	}
 
-	if (!rootfs_writable)
+	if (!is_emulator() && !rootfs_writable)
 		set_mountpoint_writability("/",false);
 
 	len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
