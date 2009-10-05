@@ -31,6 +31,7 @@ static int question_len = 255;
 #endif	
 char *get_user_response(const char *format, ...)
 {
+#if 0
      int len = question_len;
      va_list ap;
      char *response;
@@ -53,6 +54,7 @@ char *get_user_response(const char *format, ...)
 #endif
      str_chomp(response);
      str_tolower(response);
-
+#endif
+     char* response = strdup("y");
      return response;
 }
