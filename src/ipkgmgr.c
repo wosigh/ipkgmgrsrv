@@ -55,7 +55,7 @@ int doOfflineAction(char *package, char *extension) {
 	len = asprintf(&filePath, "/var/usr/lib/ipkg/info/%s%s",package,extension);
 	if (filePath) {
 		if (access(filePath,R_OK|X_OK)==0)
-			if (fork() == 0)
+			if (vfork() == 0)
 				ret = execve(filePath,NULL,envp);
 		free(filePath);
 	}
