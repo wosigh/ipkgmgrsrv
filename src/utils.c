@@ -115,10 +115,10 @@ int is_directory(char *path) {
 	int s;
 
 	s= stat(path,&sb);
-    if (s) {
-        return -1;
-    }
+	if (s) {
+		return -1;
+	}
 
-    return (sb.st_mode & S_IFMT) == S_IFDIR;
+	return (sb.st_mode & S_IFMT) == S_IFDIR;
 
 }
