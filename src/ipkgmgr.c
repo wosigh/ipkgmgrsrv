@@ -51,10 +51,12 @@ int count = 0;
 int doOfflineAction(char *package, char *extension) {
 	int ret = 0, len = 0;
 	char *filePath = 0;
+	char *const envp[] = {"IPKG_OFFLINE_ROOT=/var","PKG_ROOT=/",NULL};
 	len = asprintf(&filePath, "/var/usr/lib/ipkg/info/%s%s",package,extension);
 	if (filePath) {
 		if (access(filePath,R_OK|X_OK)==0)
-			ret = execv(filePath,NULL);
+			if (fork() == 0)
+				ret = execve(filePath,NULL,envp);
 		free(filePath);
 	}
 	return ret;
