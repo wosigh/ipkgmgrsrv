@@ -28,9 +28,6 @@ typedef enum {
 	ipkg_info,
 	ipkg_install,
 	ipkg_remove,
-	ipkg_purge,
-	ipkg_postinst,
-	ipkg_prerm,
 } ipkgcmd_t;
 
 static char *ipkgmgr_argv[] = {
@@ -101,8 +98,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	LSErrorInit(&lserror);
 
 	char *package = 0;
-	if (ipkgcmd==ipkg_info||ipkgcmd==ipkg_install||ipkgcmd==ipkg_remove||
-			ipkgcmd==ipkg_purge||ipkgcmd==ipkg_postinst||ipkgcmd==ipkg_prerm) {
+	if (ipkgcmd==ipkg_info||ipkgcmd==ipkg_install||ipkgcmd==ipkg_remove) {
 		json_t *object = LSMessageGetPayloadJSON(message);
 		if (object) {
 			json_get_string(object, "package", &package);
@@ -134,6 +130,10 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		break;
 	}
 	case ipkg_remove: {
+		bool purge = false;
+		json_t *object = LSMessageGetPayloadJSON(message);
+		if (object)
+			json_get_bool(object, "purge", purge);
 		val = doOfflineAction(package,".prerm");
 		if (val==-1)
 			ipkg_packages_remove(&args, package, FALSE);
@@ -141,16 +141,6 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 			val = ipkg_packages_remove(&args, package, FALSE);
 		break;
 	}
-	case ipkg_purge: {
-		val = doOfflineAction(package,".prerm");
-		if (val==-1)
-			ipkg_packages_remove(&args, package, TRUE);
-		else
-			val = ipkg_packages_remove(&args, package, TRUE);
-		break;
-	}
-	case ipkg_postinst: val = doOfflineAction(package,".postinst"); break;
-	case ipkg_prerm: val = doOfflineAction(package,".prerm"); break;
 	}
 
 	if (!is_emulator() && !rootfs_writable)
@@ -235,30 +225,11 @@ static bool ipkgmgr_command_remove(LSHandle* lshandle, LSMessage *message, void 
 	return ipkgmgr_process_request(lshandle,message,ipkg_remove,SUBSCRIPTION_NOTREQUIRED);
 }
 
-static bool ipkgmgr_command_purge(LSHandle* lshandle, LSMessage *message, void *ctx) {
-	return ipkgmgr_process_request(lshandle,message,ipkg_purge,SUBSCRIPTION_NOTREQUIRED);
-}
-
 LSMethod ipkgmgr_command_methods[] = {
 		{"update",ipkgmgr_command_update},
 		{"info",ipkgmgr_command_info},
 		{"install",ipkgmgr_command_install},
 		{"remove",ipkgmgr_command_remove},
-		{"purge",ipkgmgr_command_purge},
-		{0,0}
-};
-
-static bool ipkgmgr_offline_action_postinst(LSHandle* lshandle, LSMessage *message, void *ctx) {
-	return ipkgmgr_process_request(lshandle,message,ipkg_postinst,SUBSCRIPTION_NOTREQUIRED);
-}
-
-static bool ipkgmgr_offline_action_prerm(LSHandle* lshandle, LSMessage *message, void *ctx) {
-	return ipkgmgr_process_request(lshandle,message,ipkg_prerm,SUBSCRIPTION_NOTREQUIRED);
-}
-
-LSMethod ipkgmgr_offline_action_methods[] = {
-		{"doPostInst",ipkgmgr_offline_action_postinst},
-		{"doPreRm",ipkgmgr_offline_action_prerm},
 		{0,0}
 };
 
@@ -289,18 +260,6 @@ bool ipkgmgr_init() {
 	if (verbose)
 		g_message("Registering category: /commands");
 	retVal = LSRegisterCategory(lserviceHandle, "/commands", ipkgmgr_command_methods, 0, NULL, &lserror);
-	if (!retVal) {
-		if (verbose)
-			g_message("Failed.");
-		goto error;
-	} else {
-		if (verbose)
-			g_message("Succeeded.");
-	}
-
-	if (verbose)
-		g_message("Registering category: /offline_actions");
-	retVal = LSRegisterCategory(lserviceHandle, "/offline_actions", ipkgmgr_offline_action_methods, 0, NULL, &lserror);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");
