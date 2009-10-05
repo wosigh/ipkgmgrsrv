@@ -25,6 +25,7 @@ struct args
     char *tmp_dir;
     int force_defaults;
     int force_depends;
+    int force_depends_palm;
     int force_overwrite;
     int force_downgrade;
     int force_reinstall;
@@ -50,6 +51,7 @@ typedef struct args args_t;
 #define ARGS_DEFAULT_DEST NULL
 #define ARGS_DEFAULT_FORCE_DEFAULTS 0
 #define ARGS_DEFAULT_FORCE_DEPENDS 0
+#define ARGS_DEFAULT_FORCE_DEPENDS_PALM 0
 #define ARGS_DEFAULT_FORCE_OVERWRITE 0 
 #define ARGS_DEFAULT_FORCE_DOWNGRADE 0 
 #define ARGS_DEFAULT_FORCE_REINSTALL 0

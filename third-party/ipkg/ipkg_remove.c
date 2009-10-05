@@ -215,6 +215,34 @@ int ipkg_remove_pkg(ipkg_conf_t *conf, pkg_t *pkg,int message)
 	       if (err) return err;
 	  }
      }
+     else if (conf->force_depends && conf->force_depends_palm
+	    && !(pkg->state_flag & SF_REPLACE)) {
+        abstract_pkg_t **dependents;
+        int has_installed_dependents = 
+            pkg_has_installed_dependents(conf, parent_pkg, pkg, &dependents);
+    
+        if (has_installed_dependents) {
+            /*
+            * if this package is depended on by others, then just log a
+            * warning.  This makes it possible to back out a software update
+            * that added a new component, since this function returns with
+            * removing the component if the update had an upgraded component
+            * that depended on the new component.
+            */
+            err = 0;
+            if (!conf->force_removal_of_dependent_packages) {
+               /* print warning, but continue */
+               user_prefers_removing_dependents(conf, parent_pkg, pkg,
+                    dependents);
+            }
+            else {
+	           err = ipkg_remove_dependent_pkgs (conf, pkg, dependents);
+            }
+    
+            free(dependents);
+	        if (err) return err;
+        }
+     }
 
      if ( message==0 ){
          printf("Removing package %s from %s...\n", pkg->name, pkg->dest->name);

@@ -32,6 +32,7 @@ enum long_args_opt
 {
      ARGS_OPT_FORCE_DEFAULTS = 129,
      ARGS_OPT_FORCE_DEPENDS,
+     ARGS_OPT_FORCE_DEPENDS_PALM,
      ARGS_OPT_FORCE_OVERWRITE,
      ARGS_OPT_FORCE_DOWNGRADE,
      ARGS_OPT_FORCE_REINSTALL,
@@ -62,6 +63,7 @@ int args_init(args_t *args)
 
      args->force_defaults = ARGS_DEFAULT_FORCE_DEFAULTS;
      args->force_depends = ARGS_DEFAULT_FORCE_DEPENDS;
+     args->force_depends_palm = ARGS_DEFAULT_FORCE_DEPENDS_PALM;
      args->force_overwrite = ARGS_DEFAULT_FORCE_OVERWRITE;
      args->force_downgrade = ARGS_DEFAULT_FORCE_DOWNGRADE;
      args->force_reinstall = ARGS_DEFAULT_FORCE_REINSTALL;
@@ -101,6 +103,8 @@ int args_parse(args_t *args, int argc, char *argv[])
 	  {"force_defaults", 0, 0, ARGS_OPT_FORCE_DEFAULTS},
 	  {"force-depends", 0, 0, ARGS_OPT_FORCE_DEPENDS},
 	  {"force_depends", 0, 0, ARGS_OPT_FORCE_DEPENDS},
+	  {"force-depends-palm", 0, 0, ARGS_OPT_FORCE_DEPENDS_PALM},
+	  {"force_depends_palm", 0, 0, ARGS_OPT_FORCE_DEPENDS_PALM},
 	  {"force-overwrite", 0, 0, ARGS_OPT_FORCE_OVERWRITE},
 	  {"force_overwrite", 0, 0, ARGS_OPT_FORCE_OVERWRITE},
 	  {"force_downgrade", 0, 0, ARGS_OPT_FORCE_DOWNGRADE},
@@ -174,6 +178,9 @@ int args_parse(args_t *args, int argc, char *argv[])
 	       break;
 	  case ARGS_OPT_FORCE_DEPENDS:
 	       args->force_depends = 1;
+	       break;
+	  case ARGS_OPT_FORCE_DEPENDS_PALM:
+	       args->force_depends_palm = 1;
 	       break;
 	  case ARGS_OPT_FORCE_OVERWRITE:
 	       args->force_overwrite = 1;

@@ -55,6 +55,7 @@ struct ipkg_conf
 
      /* options */
      int force_depends;
+     int force_depends_palm;
      int force_defaults;
      int force_overwrite;
      int force_downgrade;

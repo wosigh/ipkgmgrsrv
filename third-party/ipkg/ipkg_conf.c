@@ -47,6 +47,7 @@ int ipkg_init_options_array(const ipkg_conf_t *conf, ipkg_option_t **options)
      ipkg_option_t tmp[] = {
 	  { "force_defaults", IPKG_OPT_TYPE_BOOL, &conf->force_defaults },
 	  { "force_depends", IPKG_OPT_TYPE_BOOL, &conf->force_depends },
+	  { "force_depends_palm", IPKG_OPT_TYPE_BOOL, &conf->force_depends_palm },
 	  { "force_overwrite", IPKG_OPT_TYPE_BOOL, &conf->force_overwrite },
 	  { "force_downgrade", IPKG_OPT_TYPE_BOOL, &conf->force_downgrade },
 	  { "force_reinstall", IPKG_OPT_TYPE_BOOL, &conf->force_reinstall },
@@ -135,6 +136,7 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
      }
 
      conf->force_depends = 0;
+     conf->force_depends_palm = 0;
      conf->force_defaults = 0;
      conf->force_overwrite = 0;
      conf->force_downgrade = 0;
@@ -233,6 +235,9 @@ int ipkg_conf_init(ipkg_conf_t *conf, const args_t *args)
 	than duplicating every field here? */
      if (args->force_depends) {
 	  conf->force_depends = 1;
+     }
+     if (args->force_depends_palm) {
+	  conf->force_depends_palm = 1;
      }
      if (args->force_defaults) {
 	  conf->force_defaults = 1;
