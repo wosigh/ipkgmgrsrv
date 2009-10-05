@@ -20,7 +20,7 @@
 #include "ipkg_message.h"
 
 #include "sprintf_alloc.h"
-#include "xsystem.h"
+#include "curl.h"
 #include "file_util.h"
 #include "str_util.h"
 
@@ -34,9 +34,9 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
     char *cmd;
 
     ipkg_message(conf,IPKG_NOTICE,"Downloading %s\n", src);
-	
+
     fflush(stdout);
-    
+
     if (str_starts_with(src, "file:")) {
 	int ret;
 	const char *file_src = src + 5;
@@ -68,22 +68,12 @@ int ipkg_download(ipkg_conf_t *conf, const char *src, const char *dest_file_name
 	setenv("no_proxy", conf->no_proxy, 1);
     }
 
-    /* XXX: BUG rewrite to use execvp or else busybox's internal wget -Jamey 7/23/2002 */ 
-    sprintf_alloc(&cmd, "wget --passive-ftp %s %s%s %s%s %s -P %s %s",
-		  (conf->http_proxy || conf->ftp_proxy) ? "--proxy=on" : "",
-		  conf->proxy_user ? "--proxy-user=" : "",
-		  conf->proxy_user ? conf->proxy_user : "",
-		  conf->proxy_passwd ? "--proxy-passwd=" : "",
-		  conf->proxy_passwd ? conf->proxy_passwd : "",
-		  conf->verbose_wget ? "" : "-q",
-		  conf->tmp_dir,
-		  src);
-    err = xsystem(cmd);
+    err = curl_download(src,conf->tmp_dir,15);
     if (err) {
 	if (err != -1) {
 	    ipkg_message(conf,IPKG_ERROR, "%s: ERROR: Command failed with return value %d: `%s'\n",
 		    __FUNCTION__, err, cmd);
-	} 
+	}
 	unlink(tmp_file_location);
 	free(tmp_file_location);
 	free(src_basec);
@@ -130,7 +120,7 @@ int ipkg_download_pkg(ipkg_conf_t *conf, pkg_t *pkg, const char *dir)
 }
 
 /*
- * Downloads file from url, installs in package database, return package name. 
+ * Downloads file from url, installs in package database, return package name.
  */
 int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char **namep)
 {
@@ -183,7 +173,7 @@ int ipkg_prepare_url_for_install(ipkg_conf_t *conf, const char *url, char **name
      pkg->dest = conf->default_dest;
      pkg->state_want = SW_INSTALL;
      pkg->state_flag |= SF_PREFER;
-     pkg = hash_insert_pkg(&conf->pkg_hash, pkg, 1,conf);  
+     pkg = hash_insert_pkg(&conf->pkg_hash, pkg, 1,conf);
      if ( pkg == NULL ){
         fprintf(stderr, "%s : This should never happen. Report this Bug in bugzilla please \n ",__FUNCTION__);
         return 0;

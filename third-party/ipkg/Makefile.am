@@ -76,7 +76,7 @@ ipkg_list_sources = conffile.c conffile.h conffile_list.c conffile_list.h \
 		    str_list.c str_list.h void_list.c void_list.h
 ipkg_util_sources = file_util.c file_util.h ipkg_message.h ipkg_message.c md5.c md5.h \
 		    sprintf_alloc.c sprintf_alloc.h str_util.c str_util.h \
-		    xregex.c xregex.h xsystem.c xsystem.h
+		    xregex.c xregex.h xsystem.c xsystem.h curl.c curl.h
 
 # ipkg_SOURCES = $(ipkg_core_sources) $(ipkg_cmd_sources) $(ipkg_db_sources) \
 #	       $(ipkg_util_sources) $(ipkg_list_sources)
