@@ -20,6 +20,8 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
 
 #include <sys/stat.h>
 #include <sys/mount.h>
@@ -121,4 +123,32 @@ int is_directory(char *path) {
 
 	return (sb.st_mode & S_IFMT) == S_IFDIR;
 
+}
+
+char **list_files_in_dir(char *dir) {
+
+	struct dirent *dp;
+	DIR *confdir = opendir(dir);
+
+	int count = 0;
+	while ((dp=readdir(confdir)) != NULL) {
+		if (dp->d_name[0] != '.')
+			count++;
+	}
+	rewinddir(confdir);
+
+	char **list = calloc(count+1, sizeof(char*));
+
+	count = 0;
+	while ((dp=readdir(confdir)) != NULL) {
+		if (dp->d_name[0] != '.') {
+			list[count] = strdup(dp->d_name);
+			count++;
+		}
+	}
+	list[count] = NULL;
+
+	closedir(confdir);
+
+	return list;
 }
