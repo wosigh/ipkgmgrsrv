@@ -153,9 +153,7 @@ int ipkg_cmd_exec(ipkg_cmd_t *cmd, ipkg_conf_t *conf, int argc, const char **arg
       
 
 	result = (cmd->fun)(conf, argc, argv);
-        if ( result == 0 ) {
-           ipkg_message(conf, IPKG_NOTICE, "Successfully terminated.\n");
-        } else {
+        if ( result != 0 ) {
            ipkg_message(conf, IPKG_NOTICE, "An error ocurred, return value: %d.\n", result);
 
         }
