@@ -29,6 +29,10 @@ typedef enum {
 	ipkg_info,
 	ipkg_install,
 	ipkg_remove,
+	ipkg_listfeeds,
+	ipkg_addfeed,
+	ipkg_removefeed,
+	ipkg_togglefeed,
 } ipkgcmd_t;
 
 static char *ipkgmgr_argv[] = {
@@ -112,6 +116,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	}
 
 	int len = 0, val = 0;
+	char *enabled_feeds = 0, *disabled_feeds = 0;
 	char *jsonResponse = 0;
 
 	bool rootfs_writable = get_mountpoint_writability("/");
@@ -142,12 +147,34 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 			val = ipkg_packages_remove(&args, package, FALSE);
 		break;
 	}
+	case ipkg_listfeeds: {
+		enabled_feeds = JSON_list_files_in_dir("/var/etc/ipkg",".conf");
+		disabled_feeds = JSON_list_files_in_dir("/var/etc/ipkg",".conf.disabled");
+	}
 	}
 
 	if (!is_emulator() && !rootfs_writable)
 		set_mountpoint_writability("/",false);
 
-	len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
+	/*
+	 * This is ugly! This should probably be converted to some sort of callback
+	 * like the other functions. So, so ugly.
+	 */
+	if (ipkgcmd==ipkg_listfeeds) {
+		if (enabled_feeds && disabled_feeds) {
+			len = asprintf(&jsonResponse,"{\"returnValue\":0,\"enabledFeeds\":%s,\"disabledFeeds\":%s}",enabled_feeds,disabled_feeds);
+			free(enabled_feeds);
+			free(disabled_feeds);
+		} else if (enabled_feeds && !disabled_feeds) {
+			len = asprintf(&jsonResponse,"{\"returnValue\":0,\"enabledFeeds\":%s}",enabled_feeds);
+			free(enabled_feeds);
+		} else if (!enabled_feeds && disabled_feeds) {
+			len = asprintf(&jsonResponse,"{\"returnValue\":0,\"disabledFeeds\":%s}",disabled_feeds);
+			free(disabled_feeds);
+		} else
+			len = asprintf(&jsonResponse,"{\"returnValue\":1}");
+	} else
+		len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
 
 	if (jsonResponse) {
 		LSMessageReply(lserviceHandle, message, jsonResponse, &lserror);
@@ -234,6 +261,30 @@ LSMethod ipkgmgr_command_methods[] = {
 		{0,0}
 };
 
+static bool ipkgmgr_feed_list(LSHandle* lshandle, LSMessage *message, void *ctx) {
+	return ipkgmgr_process_request(lshandle,message,ipkg_listfeeds,SUBSCRIPTION_NOTREQUIRED);
+}
+
+static bool ipkgmgr_feed_add(LSHandle* lshandle, LSMessage *message, void *ctx) {
+	return ipkgmgr_process_request(lshandle,message,ipkg_addfeed,SUBSCRIPTION_NOTREQUIRED);
+}
+
+static bool ipkgmgr_feed_remove(LSHandle* lshandle, LSMessage *message, void *ctx) {
+	return ipkgmgr_process_request(lshandle,message,ipkg_removefeed,SUBSCRIPTION_NOTREQUIRED);
+}
+
+static bool ipkgmgr_feed_toggle(LSHandle* lshandle, LSMessage *message, void *ctx) {
+	return ipkgmgr_process_request(lshandle,message,ipkg_togglefeed,SUBSCRIPTION_NOTREQUIRED);
+}
+
+LSMethod ipkgmgr_feed_methods[] = {
+		{"list",ipkgmgr_feed_list},
+		{"add",ipkgmgr_feed_add},
+		{"remove",ipkgmgr_feed_remove},
+		{"toggle",ipkgmgr_feed_toggle},
+		{0,0}
+};
+
 bool ipkgmgr_init() {
 
 	bool retVal = TRUE;
@@ -261,6 +312,18 @@ bool ipkgmgr_init() {
 	if (verbose)
 		g_message("Registering category: /commands");
 	retVal = LSRegisterCategory(lserviceHandle, "/commands", ipkgmgr_command_methods, 0, NULL, &lserror);
+	if (!retVal) {
+		if (verbose)
+			g_message("Failed.");
+		goto error;
+	} else {
+		if (verbose)
+			g_message("Succeeded.");
+	}
+
+	if (verbose)
+		g_message("Registering category: /feeds");
+	retVal = LSRegisterCategory(lserviceHandle, "/feeds", ipkgmgr_feed_methods, 0, NULL, &lserror);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");

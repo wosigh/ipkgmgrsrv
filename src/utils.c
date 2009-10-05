@@ -126,33 +126,35 @@ int is_directory(char *path) {
 
 }
 
-char **list_files_in_dir(char *dir, char *file_suffix) {
+char *JSON_list_files_in_dir(char *dir, char *file_suffix) {
+
+	int len = 0;
+	struct dirent *dp;
+	char *tmp = 0, *jsonResponse = 0;
 
 	int len1 = strlen(file_suffix);
-	struct dirent *dp;
+
 	DIR *confdir = opendir(dir);
-
-	int count = 0;
-	while ((dp=readdir(confdir)) != NULL) {
-		int len2 = strlen(dp->d_name);
-		if (strcmp(dp->d_name+(len2-len1),file_suffix))
-			count++;
-	}
-	rewinddir(confdir);
-
-	char **list = calloc(count+1, sizeof(char*));
-
-	count = 0;
 	while ((dp=readdir(confdir)) != NULL) {
 		int len2 = strlen(dp->d_name);
 		if (strcmp(dp->d_name+(len2-len1),file_suffix)) {
-			list[count] = strdup(dp->d_name);
-			count++;
+			if (!jsonResponse) {
+				len = asprintf(&jsonResponse,"\"%s\"", dp->d_name);
+			} else {
+				len = asprintf(&tmp,"\"%s\",\"%s\"", jsonResponse, dp->d_name);
+				free(jsonResponse);
+				jsonResponse = strdup(tmp);
+				free(tmp);
+			}
 		}
 	}
-	list[count] = NULL;
-
 	closedir(confdir);
 
-	return list;
+	if (jsonResponse) {
+		len = asprintf(&tmp,"[%s]",jsonResponse);
+		free(jsonResponse);
+		return tmp;
+	} else
+		return NULL;
+
 }
