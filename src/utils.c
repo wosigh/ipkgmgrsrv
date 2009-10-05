@@ -125,14 +125,16 @@ int is_directory(char *path) {
 
 }
 
-char **list_files_in_dir(char *dir) {
+char **list_files_in_dir(char *dir, char *file_suffix) {
 
+	int len1 = strlen(file_suffix);
 	struct dirent *dp;
 	DIR *confdir = opendir(dir);
 
 	int count = 0;
 	while ((dp=readdir(confdir)) != NULL) {
-		if (dp->d_name[0] != '.')
+		int len2 = strlen(dp->d_name);
+		if (strcmp(dp->d_name+(len2-len1),file_suffix))
 			count++;
 	}
 	rewinddir(confdir);
@@ -141,7 +143,8 @@ char **list_files_in_dir(char *dir) {
 
 	count = 0;
 	while ((dp=readdir(confdir)) != NULL) {
-		if (dp->d_name[0] != '.') {
+		int len2 = strlen(dp->d_name);
+		if (strcmp(dp->d_name+(len2-len1),file_suffix)) {
 			list[count] = strdup(dp->d_name);
 			count++;
 		}
