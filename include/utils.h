@@ -23,5 +23,7 @@
 
 bool get_mountpoint_writability(char *mountpoint);
 bool set_mountpoint_writability(char *mountpoint, bool writable);
+bool is_emulator();
+int is_directory(char *path);
 
 #endif /* UTILS_H_ */

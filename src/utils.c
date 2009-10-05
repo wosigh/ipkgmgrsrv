@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include <sys/stat.h>
 #include <sys/mount.h>
 
 bool get_mountpoint_writability(char *mountpoint) {
@@ -105,5 +106,19 @@ bool is_emulator() {
 	}
 
 	return ret;
+
+}
+
+int is_directory(char *path) {
+
+	struct stat sb;
+	int s;
+
+	s= stat(path,&sb);
+    if (s) {
+        return -1;
+    }
+
+    return (sb.st_mode & S_IFMT) == S_IFDIR;
 
 }

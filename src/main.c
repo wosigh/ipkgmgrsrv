@@ -22,6 +22,7 @@
 
 #include "ipkgmgrsrv.h"
 #include "ipkgmgr.h"
+#include "utils.h"
 
 const char *dbusAddress = "us.ryanhope.ipkgmgrsrv";
 
@@ -69,12 +70,55 @@ int getopts(int argc, char *argv[]) {
 
 }
 
+void check_ipkg_config_dir() {
+
+	if (verbose)
+		g_message("Checking for directory /var/etc/ipkg ...");
+
+	int i = is_directory("/var/etc/ipkg");
+	if (i>0) {
+		if (verbose)
+			g_message("Succeeded.");
+	} else {
+		if (verbose)
+			g_message("Failed.");
+		if (i==0) {
+			if (verbose)
+				g_message("Attempting to remove non-direcotry /var/etc/ipkg");
+			i = remove("/var/etc/ipkg");
+			if (i==0) {
+				if (verbose)
+					g_message("Succeeded.");
+			} else {
+				if (verbose) {
+					g_message("Failed.");
+					exit(1);
+				}
+			}
+		}
+		if (verbose)
+			g_message("Creating directory: /var/etc/ipkg");
+		static mode_t mode = 0777;
+		if (mkdir("/var/etc/ipkg",mode)==0) {
+			if (verbose)
+				g_message("Succeeded.");
+			else {
+				g_message("Failed.");
+				exit(1);
+			}
+		}
+	}
+
+}
+
 int main(int argc, char *argv[]) {
 
 	verbose = FALSE;
 
 	if (getopts(argc,argv)==1)
 		return 1;
+
+	check_ipkg_config_dir();
 
 	bool retVal = TRUE;
 
@@ -101,7 +145,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (!retVal)
-			goto error;
+		goto error;
 
 	retVal = ipkgmgr_init();
 
