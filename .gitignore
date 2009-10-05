@@ -4,3 +4,5 @@ autom4te.cache
 obj
 .cproject
 .project
+*.orig
+*.rej
