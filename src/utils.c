@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <sys/stat.h>
 #include <sys/mount.h>
@@ -168,8 +169,11 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 	char *configPath = 0;
 	len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
 	if (configPath) {
+		struct flock fl = { F_WRLCK, SEEK_SET, 0, 0, 0 };
+        fl.l_pid = getpid();
 		FILE *fp;
 		if((fp=fopen(configPath,"r")) != NULL) {
+		    fcntl(fileno(fp), F_SETLKW, &fl);
 			char l[512];
 			while (fscanf(fp, "%*s%s%*s",l) != EOF) {
 				if (strcmp(label,l)==0) {
@@ -180,9 +184,10 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 				}
 			}
 		}
-		if((fp=fopen(configPath,"a+")) != NULL)
+		if((fp=fopen(configPath,"a+")) != NULL) {
+			fcntl(fileno(fp), F_SETLKW, &fl);
 			goto addfeed;
-		else
+		} else
 			goto err;
 
 		addfeed:
@@ -196,6 +201,8 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 			if (verbose)
 				g_message("Failed.");
 		}
+	    fl.l_type = F_UNLCK;
+	    fcntl(fileno(fp), F_SETLKW, &fl);
 
 		done:
 		if (fp)
