@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #include <sys/stat.h>
 #include <sys/mount.h>
@@ -166,14 +165,15 @@ char *JSON_list_files_in_dir(char *dir, char *file_suffix) {
 int add_feed_config(char *feed_config, char *type, char *label, char *url, bool verbose) {
 	int ret = -1;
 	int len = 0;
+	int lock = -1;
 	char *configPath = 0;
 	len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
 	if (configPath) {
-		struct flock fl = { F_WRLCK, SEEK_SET, 0, 0, 0 };
-		fl.l_pid = getpid();
 		FILE *fp;
 		if((fp=fopen(configPath,"r")) != NULL) {
-			fcntl(fileno(fp), F_SETLKW, &fl);
+			lock = lockf(fileno(fp), F_LOCK, -1);
+			if (lock!=0)
+				goto done;
 			char l[512];
 			while (fscanf(fp, "%*s%s%*s",l) != EOF) {
 				if (strcmp(label,l)==0) {
@@ -185,7 +185,9 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 			}
 		}
 		if((fp=fopen(configPath,"a+")) != NULL) {
-			fcntl(fileno(fp), F_SETLKW, &fl);
+			lock = lockf(fileno(fp), F_LOCK, 0);
+			if (lock!=0)
+				goto done;
 			goto addfeed;
 		} else
 			goto err;
@@ -201,8 +203,7 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 			if (verbose)
 				g_message("Failed.");
 		}
-		fl.l_type = F_UNLCK;
-		fcntl(fileno(fp), F_SETLKW, &fl);
+		lock = lockf(fileno(fp), F_ULOCK, 0);
 
 		done:
 		if (fp)
