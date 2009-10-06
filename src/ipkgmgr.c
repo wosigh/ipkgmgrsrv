@@ -107,14 +107,24 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	char *package = 0;
 	if (ipkgcmd==ipkg_info||ipkgcmd==ipkg_install||ipkgcmd==ipkg_remove) {
 		json_t *object = LSMessageGetPayloadJSON(message);
-		if (object) {
+		if (object)
 			json_get_string(object, "package", &package);
-		}
 		if (ipkgcmd!=ipkg_info && !package) {
 			LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"package\" required and not found\"}", &lserror);
 			goto finnish;
 		}
 
+	}
+
+	char *feed_config = 0;
+	if (ipkgcmd==ipkg_removefeed||ipkgcmd==ipkg_addfeed||ipkgcmd==ipkg_togglefeed) {
+		json_t *object = LSMessageGetPayloadJSON(message);
+		if (object)
+			json_get_string(object, "feed_config", &feed_config);
+		if (!feed_config) {
+			LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"feed_config\" required and not found\"}", &lserror);
+			goto finnish;
+		}
 	}
 
 	int len = 0, val = -1;
@@ -155,19 +165,47 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		break;
 	}
 	case ipkg_removefeed: {
-		char *feed_config;
-		json_t *object = LSMessageGetPayloadJSON(message);
-		if (object)
-			json_get_string(object, "feed_config", &feed_config);
-		if (feed_config) {
-			int len = 0;
-			char *configPath = 0;
-			len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
-			if (configPath) {
-				if (access(configPath,R_OK)==0)
-					val = remove(configPath);
-				free(configPath);
+		int len = 0;
+		char *configPath = 0;
+		len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
+		if (configPath) {
+			if (access(configPath,R_OK)==0)
+				val = remove(configPath);
+			free(configPath);
+		}
+		break;
+	}
+	case ipkg_togglefeed: {
+		char *config;
+		int len = 0;
+		char *configPathOld = 0, *configPathNew = 0;
+		len = asprintf(&configPathOld,"/var/etc/ipkg/%s",feed_config);
+		if (configPathOld) {
+			if (access(configPathOld,R_OK)==0) {
+				int e = strlen(feed_config)-9;
+				if (strcmp(feed_config+e,".disabled")==0) {
+					strncpy(config,feed_config,e);
+				} else {
+					len = asprintf(&config,"%s.disabled",feed_config);
+				}
+				if (config) {
+					if (verbose)
+						g_message("Toggling %s => %s",feed_config,config);
+					len = asprintf(&configPathNew,"/var/etc/ipkg/%s",config);
+					if (configPathNew) {
+						val = rename(configPathOld,configPathNew);
+						if (verbose) {
+							if (val==0)
+								g_message("Succeeded.");
+							else
+								g_message("Failed.");
+						}
+						free(configPathNew);
+					}
+					free(config);
+				}
 			}
+			free(configPathOld);
 		}
 		break;
 	}
