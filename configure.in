@@ -26,7 +26,7 @@ GLIB_CFLAGS="-I${PRE_DEV_ROOT}/usr/include/mjson -I${PRE_DEV_ROOT}/usr/include/g
 PROJECT_CFLAGS="-Iinclude -Iinclude/liblunaservice -L."
 
 CFLAGS="-g -Wall -D_GNU_SOURCE -DIPKG_LIB ${STD_CFLAGS} ${GLIB_CFLAGS} ${PROJECT_CFLAGS}"
-LDFLAGS="-lglib-2.0 -lmjson"
+LDFLAGS="-lglib-2.0 -lmjson -lcurl"
 
 case $target in
   arm*)

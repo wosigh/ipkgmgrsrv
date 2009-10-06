@@ -555,7 +555,7 @@ S["OBJEXT"]="o"
 S["EXEEXT"]=""
 S["ac_ct_CC"]=""
 S["CPPFLAGS"]=""
-S["LDFLAGS"]="-llunaservice-armv7 -lglib-2.0 -lmjson"
+S["LDFLAGS"]="-llunaservice-armv7 -lglib-2.0 -lmjson -lcurl"
 S["CFLAGS"]="-march=armv7-a -mtune=cortex-a8 -Os -fPIC -g -Wall -D_GNU_SOURCE -DIPKG_LIB  -I/usr/arm-none-linux-gnueabi/usr/include/ -I/usr/arm-none-linux-gnueab"\
 "i/include/ -L/usr/arm-none-linux-gnueabi/lib -L/usr/arm-none-linux-gnueabi/usr/lib -Xlinker -rpath-link=/usr/arm-none-linux-gnueabi/usr/lib -I/usr/a"\
 "rm-none-linux-gnueabi/usr/include/mjson -I/usr/arm-none-linux-gnueabi/usr/include/glib-2.0 -I/usr/arm-none-linux-gnueabi/usr/lib/glib-2.0/include -I"\
