@@ -21,6 +21,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include <glib.h>
+
 #include "ipkgmgr.h"
 #include "utils.h"
 
@@ -115,7 +117,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 
 	}
 
-	int len = 0, val = 0;
+	int len = 0, val = -1;
 	char *enabled_feeds = 0, *disabled_feeds = 0;
 	char *jsonResponse = 0;
 
@@ -150,6 +152,24 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	case ipkg_listfeeds: {
 		enabled_feeds = JSON_list_files_in_dir("/var/etc/ipkg",".conf");
 		disabled_feeds = JSON_list_files_in_dir("/var/etc/ipkg",".conf.disabled");
+		break;
+	}
+	case ipkg_removefeed: {
+		char *feed_config;
+		json_t *object = LSMessageGetPayloadJSON(message);
+		if (object)
+			json_get_string(object, "feed_config", &feed_config);
+		if (feed_config) {
+			int len = 0;
+			char *configPath = 0;
+			len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
+			if (configPath) {
+				if (access(configPath,R_OK)==0)
+					val = remove(configPath);
+				free(configPath);
+			}
+		}
+		break;
 	}
 	}
 
