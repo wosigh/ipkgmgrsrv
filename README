@@ -1,17 +1,20 @@
 See INSTALL for build instructions.
 
+* = required params
 
 -Method-						-Params-					-Subscription-
 ================================================================================
 		
 /commands/update				-							-
-/commands/info					-							-
-/commands/install				package_id					-
-/commands/remove				package_id					-
-/commands/purge					package_id					-
+/commands/info					package_id							-
+/commands/install				*package_id					-
+/commands/remove				*package_id					-
+/commands/purge					*package_id					-
 
-/offline_actions/doPostInst		package_id					-
-/offline_actions/doPreRm		package_id					-
+/commands/list					-							-
+/commands/add					*feed_config,*feed_entry		-
+/commands/remove				*feed_config					-
+/commands/toggle				*feed_config					-
 
 /callbacks/message				-							required
 /callbacks/status				-							required
