@@ -64,7 +64,6 @@ int curl_download(char *url, char *destination, int timeout) {
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fileWriter);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 		curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
