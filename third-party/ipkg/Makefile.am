@@ -98,12 +98,12 @@ libipkg_la_SOURCES = $(ipkg_libcore_sources) $(ipkg_cmd_sources) $(ipkg_db_sourc
 ipkg_cl_SOURCES = ipkg-frontend.c
 
 libipkg_la_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)
-libipkg_la_LDFLAGS = -lcurl
+libipkg_la_LDFLAGS = -static -lcurl
 
 ipkg_CFLAGS = $(ALL_CFLAGS)
 
 ipkg_cl_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)
-ipkg_cl_LDFLAGS = -lcurl
+ipkg_cl_LDFLAGS = -static -lcurl
 
 noinst_PROGRAMS = ipkg_hash_test ipkg_extract_test
 
