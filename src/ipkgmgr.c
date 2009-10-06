@@ -176,7 +176,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		break;
 	}
 	case ipkg_togglefeed: {
-		char *config;
+		char *config = 0;
 		int len = 0;
 		char *configPathOld = 0, *configPathNew = 0;
 		len = asprintf(&configPathOld,"/var/etc/ipkg/%s",feed_config);
@@ -184,7 +184,9 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 			if (access(configPathOld,R_OK)==0) {
 				int e = strlen(feed_config)-9;
 				if (strcmp(feed_config+e,".disabled")==0) {
-					strncpy(config,feed_config,e);
+					config = malloc((e+1)*sizeof(char*));
+					if (config)
+						strncpy(config,feed_config,e);
 				} else {
 					len = asprintf(&config,"%s.disabled",feed_config);
 				}
