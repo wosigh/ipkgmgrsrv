@@ -185,8 +185,10 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 				int e = strlen(feed_config)-9;
 				if (strcmp(feed_config+e,".disabled")==0) {
 					config = malloc((e+1)*sizeof(char*));
-					if (config)
+					if (config) {
 						strncpy(config,feed_config,e);
+						feed_config[e] = '\0';
+					}
 				} else {
 					len = asprintf(&config,"%s.disabled",feed_config);
 				}
