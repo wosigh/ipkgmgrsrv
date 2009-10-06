@@ -194,10 +194,9 @@ int toggle_feed_config(char *feed_config, bool verbose) {
 		if (access(configPathOld,R_OK)==0) {
 			int e = strlen(feed_config)-9;
 			if (strcmp(feed_config+e,".disabled")==0) {
-				config = malloc((e+1)*sizeof(char*));
+				config = calloc(e+1,sizeof(char));
 				if (config) {
 					strncpy(config,feed_config,e);
-					feed_config[e] = '\0';
 				}
 			} else {
 				len = asprintf(&config,"%s.disabled",feed_config);
