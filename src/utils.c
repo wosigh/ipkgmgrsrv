@@ -27,6 +27,8 @@
 #include <sys/stat.h>
 #include <sys/mount.h>
 
+#include <glib.h>
+
 bool get_mountpoint_writability(char *mountpoint) {
 
 	FILE *fp;
@@ -137,11 +139,11 @@ char *JSON_list_files_in_dir(char *dir, char *file_suffix) {
 	DIR *confdir = opendir(dir);
 	while ((dp=readdir(confdir)) != NULL) {
 		int len2 = strlen(dp->d_name);
-		if (strcmp(dp->d_name+(len2-len1),file_suffix)) {
+		if (strcmp(dp->d_name+(len2-len1),file_suffix)==0) {
 			if (!jsonResponse) {
 				len = asprintf(&jsonResponse,"\"%s\"", dp->d_name);
 			} else {
-				len = asprintf(&tmp,"\"%s\",\"%s\"", jsonResponse, dp->d_name);
+				len = asprintf(&tmp,"%s,\"%s\"", jsonResponse, dp->d_name);
 				free(jsonResponse);
 				jsonResponse = strdup(tmp);
 				free(tmp);
