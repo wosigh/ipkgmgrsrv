@@ -179,7 +179,6 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 					goto done;
 				}
 			}
-			fclose(fp);
 		}
 		if((fp=fopen(configPath,"a+")) != NULL)
 			goto addfeed;
