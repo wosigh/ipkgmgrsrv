@@ -104,26 +104,52 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 	LSError lserror;
 	LSErrorInit(&lserror);
 
+	json_t *object = LSMessageGetPayloadJSON(message);
+
 	char *package = 0;
 	if (ipkgcmd==ipkg_info||ipkgcmd==ipkg_install||ipkgcmd==ipkg_remove) {
-		json_t *object = LSMessageGetPayloadJSON(message);
-		if (object)
+		if (object) {
 			json_get_string(object, "package", &package);
-		if (ipkgcmd!=ipkg_info && !package) {
-			LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"package\" required and not found\"}", &lserror);
+			if (ipkgcmd!=ipkg_info && !package) {
+				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"package\" required and not found\"}", &lserror);
+				goto finnish;
+			}
+		}
+	}
+
+	char *type = 0, *label = 0, *url = 0;
+	if (ipkgcmd==ipkg_addfeed) {
+		if (object) {
+			json_get_string(object, "type", &type);
+			if (!type) {
+				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"type\" required and not found\"}", &lserror);
+				goto finnish;
+			}
+			json_get_string(object, "label", &label);
+			if (!label) {
+				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"label\" required and not found\"}", &lserror);
+				goto finnish;
+			}
+			json_get_string(object, "url", &url);
+			if (!url) {
+				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"url\" required and not found\"}", &lserror);
+				goto finnish;
+			}
+		}
+		if (!type || !label || !url) {
+			LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic parameter error\"}", &lserror);
 			goto finnish;
 		}
-
 	}
 
 	char *feed_config = 0;
 	if (ipkgcmd==ipkg_removefeed||ipkgcmd==ipkg_addfeed||ipkgcmd==ipkg_togglefeed) {
-		json_t *object = LSMessageGetPayloadJSON(message);
-		if (object)
+		if (object) {
 			json_get_string(object, "feed_config", &feed_config);
-		if (!feed_config) {
-			LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"feed_config\" required and not found\"}", &lserror);
-			goto finnish;
+			if (!feed_config) {
+				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"feed_config\" required and not found\"}", &lserror);
+				goto finnish;
+			}
 		}
 	}
 
@@ -164,6 +190,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		disabled_feeds = JSON_list_files_in_dir("/var/etc/ipkg",".conf.disabled");
 		break;
 	}
+	case ipkg_addfeed: val = add_feed_config(feed_config, type, label, url, verbose); break;
 	case ipkg_removefeed: val = remove_feed_config(feed_config, verbose); break;
 	case ipkg_togglefeed: val = toggle_feed_config(feed_config, verbose); break;
 	}

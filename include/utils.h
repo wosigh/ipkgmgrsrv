@@ -27,6 +27,7 @@ bool set_mountpoint_writability(char *mountpoint, bool writable);
 bool is_emulator();
 int is_directory(char *path);
 char *JSON_list_files_in_dir(char *dir, char *file_suffix);
+int add_feed_config(char *feed_config, char *type, char *label, char *url, bool verbose);
 int remove_feed_config(char *feed_config, bool verbose);
 int toggle_feed_config(char *feed_config, bool verbose);
 

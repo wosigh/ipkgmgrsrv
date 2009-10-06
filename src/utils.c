@@ -162,6 +162,53 @@ char *JSON_list_files_in_dir(char *dir, char *file_suffix) {
 
 }
 
+int add_feed_config(char *feed_config, char *type, char *label, char *url, bool verbose) {
+	int ret = -1;
+	int len = 0;
+	char *configPath = 0;
+	len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
+	if (configPath) {
+		FILE *fp;
+		if((fp=fopen(configPath,"r")) != NULL) {
+			char l[512];
+			while (fscanf(fp, "%*s%s%*s",l) != EOF) {
+				if (strcmp(label,l)==0) {
+					ret = 1;
+					if (verbose)
+						g_message("Label \"%s\" found in %s, aborting.", label, configPath);
+					goto done;
+				}
+			}
+			fclose(fp);
+		}
+		if((fp=fopen(configPath,"a+")) != NULL)
+			goto addfeed;
+		else
+			goto err;
+
+		addfeed:
+		if (verbose)
+			g_message("Adding \"%s %s %s\" to %s", type, label, url, configPath);
+		if (fprintf(fp,"%s %s %s\n", type, label, url) == strlen(type)+strlen(label)+strlen(url)+3) {
+			ret = 0;
+			if (verbose)
+				g_message("Succeeded.");
+		} else {
+			if (verbose)
+				g_message("Failed.");
+		}
+
+		done:
+		if (fp)
+			fclose(fp);
+
+		err:
+		free(configPath);
+
+	}
+	return ret;
+}
+
 int remove_feed_config(char *feed_config, bool verbose) {
 	int ret = -1;
 	int len = 0;
