@@ -171,7 +171,7 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 	if (configPath) {
 		FILE *fp;
 		if((fp=fopen(configPath,"r")) != NULL) {
-			lock = lockf(fileno(fp), F_LOCK, -1);
+			lock = lockf(fileno(fp), F_LOCK, 0);
 			if (lock!=0)
 				goto done;
 			char l[512];
@@ -203,6 +203,7 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 			if (verbose)
 				g_message("Failed.");
 		}
+		rewind(fp);
 		lock = lockf(fileno(fp), F_ULOCK, 0);
 
 		done:
