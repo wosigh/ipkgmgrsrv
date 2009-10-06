@@ -4,7 +4,7 @@ SUBDIRS = etc familiar libbb
 HOST_CPU=@host_cpu@
 BUILD_CPU=@build_cpu@
 IPKGLIBDIR=@ipkglibdir@ 
-ALL_CFLAGS=-g -O -Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DIPKGLIBDIR=\"@ipkglibdir@\" -DDATADIR=\"@datadir@\" -lcurl
+ALL_CFLAGS=-g -O -Wall -DHOST_CPU_STR=\"@host_cpu@\" -DBUILD_CPU=@build_cpu@ -DLIBDIR=\"@libdir@\" -DIPKGLIBDIR=\"@ipkglibdir@\" -DDATADIR=\"@datadir@\"
 
 bin_PROGRAMS = ipkg-cl
 
@@ -55,10 +55,10 @@ libipkg_include_HEADERS= \
 libipkg_la_LIBADD = libbb/libbb.la 
 
 ipkg_core_sources = args.c args.h ipkg.c \
-		    user.c user.h 
+		    user.c user.h
 ipkg_libcore_sources = args.c args.h libipkg.c libipkg.h ipkg.h\
-		    user.c user.h 
-ipkg_cmd_sources = ipkg_cmd.c ipkg_cmd.h \
+		    user.c user.h
+ipkg_cmd_sources = curl.c curl.h ipkg_cmd.c ipkg_cmd.h \
 		   ipkg_configure.c ipkg_configure.h \
 		   ipkg_download.c ipkg_download.h \
 		   ipkg_install.c ipkg_install.h \
@@ -76,7 +76,7 @@ ipkg_list_sources = conffile.c conffile.h conffile_list.c conffile_list.h \
 		    str_list.c str_list.h void_list.c void_list.h
 ipkg_util_sources = file_util.c file_util.h ipkg_message.h ipkg_message.c md5.c md5.h \
 		    sprintf_alloc.c sprintf_alloc.h str_util.c str_util.h \
-		    xregex.c xregex.h xsystem.c xsystem.h curl.c curl.h
+		    xregex.c xregex.h xsystem.c xsystem.h
 
 # ipkg_SOURCES = $(ipkg_core_sources) $(ipkg_cmd_sources) $(ipkg_db_sources) \
 #	       $(ipkg_util_sources) $(ipkg_list_sources)
@@ -98,10 +98,12 @@ libipkg_la_SOURCES = $(ipkg_libcore_sources) $(ipkg_cmd_sources) $(ipkg_db_sourc
 ipkg_cl_SOURCES = ipkg-frontend.c
 
 libipkg_la_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)
+libipkg_la_LDFLAGS = -lcurl
 
 ipkg_CFLAGS = $(ALL_CFLAGS)
 
 ipkg_cl_CFLAGS = -DIPKG_LIB $(ALL_CFLAGS)
+ipkg_cl_LDFLAGS = -lcurl
 
 noinst_PROGRAMS = ipkg_hash_test ipkg_extract_test
 
