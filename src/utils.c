@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
+#include <unistd.h>
 
 #include <sys/stat.h>
 #include <sys/mount.h>
@@ -159,4 +160,66 @@ char *JSON_list_files_in_dir(char *dir, char *file_suffix) {
 	} else
 		return NULL;
 
+}
+
+int remove_feed_config(char *feed_config, bool verbose) {
+	int ret = -1;
+	int len = 0;
+	char *configPath = 0;
+	len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
+	if (configPath) {
+		if (access(configPath,R_OK)==0) {
+			if (verbose)
+				g_message("Removing %s",feed_config);
+			ret = remove(configPath);
+			if (verbose) {
+				if (ret==0)
+					g_message("Succeeded.");
+				else
+					g_message("Failed.");
+			}
+		}
+		free(configPath);
+	}
+	return ret;
+}
+
+int toggle_feed_config(char *feed_config, bool verbose) {
+	int ret = -1;
+	char *config = 0;
+	int len = 0;
+	char *configPathOld = 0, *configPathNew = 0;
+	len = asprintf(&configPathOld,"/var/etc/ipkg/%s",feed_config);
+	if (configPathOld) {
+		if (access(configPathOld,R_OK)==0) {
+			int e = strlen(feed_config)-9;
+			if (strcmp(feed_config+e,".disabled")==0) {
+				config = malloc((e+1)*sizeof(char*));
+				if (config) {
+					strncpy(config,feed_config,e);
+					feed_config[e] = '\0';
+				}
+			} else {
+				len = asprintf(&config,"%s.disabled",feed_config);
+			}
+			if (config) {
+				if (verbose)
+					g_message("Toggling %s => %s",feed_config,config);
+				len = asprintf(&configPathNew,"/var/etc/ipkg/%s",config);
+				if (configPathNew) {
+					ret = rename(configPathOld,configPathNew);
+					if (verbose) {
+						if (ret==0)
+							g_message("Succeeded.");
+						else
+							g_message("Failed.");
+					}
+					free(configPathNew);
+				}
+				free(config);
+			}
+		}
+		free(configPathOld);
+	}
+	return ret;
 }

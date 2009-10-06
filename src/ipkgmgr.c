@@ -164,55 +164,8 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		disabled_feeds = JSON_list_files_in_dir("/var/etc/ipkg",".conf.disabled");
 		break;
 	}
-	case ipkg_removefeed: {
-		int len = 0;
-		char *configPath = 0;
-		len = asprintf(&configPath,"/var/etc/ipkg/%s",feed_config);
-		if (configPath) {
-			if (access(configPath,R_OK)==0)
-				val = remove(configPath);
-			free(configPath);
-		}
-		break;
-	}
-	case ipkg_togglefeed: {
-		char *config = 0;
-		int len = 0;
-		char *configPathOld = 0, *configPathNew = 0;
-		len = asprintf(&configPathOld,"/var/etc/ipkg/%s",feed_config);
-		if (configPathOld) {
-			if (access(configPathOld,R_OK)==0) {
-				int e = strlen(feed_config)-9;
-				if (strcmp(feed_config+e,".disabled")==0) {
-					config = malloc((e+1)*sizeof(char*));
-					if (config) {
-						strncpy(config,feed_config,e);
-						feed_config[e] = '\0';
-					}
-				} else {
-					len = asprintf(&config,"%s.disabled",feed_config);
-				}
-				if (config) {
-					if (verbose)
-						g_message("Toggling %s => %s",feed_config,config);
-					len = asprintf(&configPathNew,"/var/etc/ipkg/%s",config);
-					if (configPathNew) {
-						val = rename(configPathOld,configPathNew);
-						if (verbose) {
-							if (val==0)
-								g_message("Succeeded.");
-							else
-								g_message("Failed.");
-						}
-						free(configPathNew);
-					}
-					free(config);
-				}
-			}
-			free(configPathOld);
-		}
-		break;
-	}
+	case ipkg_removefeed: val = remove_feed_config(feed_config, verbose); break;
+	case ipkg_togglefeed: val = toggle_feed_config(feed_config, verbose); break;
 	}
 
 	if (!is_emulator() && !rootfs_writable)
