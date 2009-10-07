@@ -327,45 +327,16 @@ LSMethod ipkgmgr_feed_methods[] = {
 		{0,0}
 };
 
-bool ipkgmgr_init() {
+bool ipkgmgr_register_category(char *category, LSMethod *methods) {
 
 	bool retVal = TRUE;
 
 	LSError lserror;
 	LSErrorInit(&lserror);
 
-	ipkg_cb_message = ipkgmgr_ipkg_message_callback;
-
-	args_init(&args);
-	args_parse(&args, ipkgmgr_argc, ipkgmgr_argv);
-
 	if (verbose)
-		g_message("Registering category: /callbacks");
-	retVal = LSRegisterCategory(lserviceHandle, "/callbacks", ipkgmgr_callback_methods, 0, NULL, &lserror);
-	if (!retVal) {
-		if (verbose)
-			g_message("Failed.");
-		goto error;
-	} else {
-		if (verbose)
-			g_message("Succeeded.");
-	}
-
-	if (verbose)
-		g_message("Registering category: /commands");
-	retVal = LSRegisterCategory(lserviceHandle, "/commands", ipkgmgr_command_methods, 0, NULL, &lserror);
-	if (!retVal) {
-		if (verbose)
-			g_message("Failed.");
-		goto error;
-	} else {
-		if (verbose)
-			g_message("Succeeded.");
-	}
-
-	if (verbose)
-		g_message("Registering category: /feeds");
-	retVal = LSRegisterCategory(lserviceHandle, "/feeds", ipkgmgr_feed_methods, 0, NULL, &lserror);
+		g_message("Registering category: %s", category);
+	retVal = LSRegisterCategory(lserviceHandle, category, methods, 0, NULL, &lserror);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");
@@ -381,6 +352,27 @@ bool ipkgmgr_init() {
 	}
 
 	return retVal;
+
+}
+
+bool ipkgmgr_init() {
+
+	ipkg_cb_message = ipkgmgr_ipkg_message_callback;
+
+	args_init(&args);
+	args_parse(&args, ipkgmgr_argc, ipkgmgr_argv);
+
+	if (!ipkgmgr_register_category("/callbacks",ipkgmgr_callback_methods))
+		goto fail;
+	if (!ipkgmgr_register_category("/commands",ipkgmgr_command_methods))
+		goto fail;
+	if (!ipkgmgr_register_category("/feeds",ipkgmgr_feed_methods))
+		goto fail;
+
+	return true;
+
+	fail:
+	return false;
 
 }
 
