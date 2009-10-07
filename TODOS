@@ -15,3 +15,5 @@
   (returnValue: true equals no errors).
   
 * Add confirmation support.
+
+* Check for memory leaks.
