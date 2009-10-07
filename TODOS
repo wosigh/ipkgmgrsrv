@@ -6,6 +6,10 @@
 
 * Make sure subscriptions only reply to the app that requested the info.
 
+* Provide methods for handling PostInstallFlags and PostRemoveFlags.
+
+* Format the subscription/callback responses into json.
+
 * Standardize return values, some functions use unix style 
   (returnValue:0 equals no errors). These should be switched to palm style 
   (returnValue: true equals no errors).
