@@ -99,6 +99,11 @@ int ipkgmrg_ipkg_status_callback(char *name, int istatus, char *desc, void *user
 	return 0;
 }
 
+bool ipkgmgr_luna_rescan_handler(LSHandle *sh, LSMessage *reply, void *ctx) {
+	g_message("%s",LSMessageGetPayload(reply));
+	return true;
+}
+
 bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 
 	LSError lserror;
@@ -327,6 +332,26 @@ LSMethod ipkgmgr_feed_methods[] = {
 		{0,0}
 };
 
+static bool ipkgmgr_luna_rescan(LSHandle* lshandle, LSMessage *message, void *ctx) {
+
+	bool retVal;
+	LSError lserror;
+	LSErrorInit(&lserror);
+
+	LSHandle *handle = LSPalmServiceGetPrivateConnection(plserviceHandle);
+
+	retVal = LSCall(handle, "luna://com.palm.applicationManager/rescan", "{}", ipkgmgr_luna_rescan_handler, NULL, NULL, &lserror);
+
+	LSErrorFree(&lserror);
+	return TRUE;
+
+}
+
+LSMethod ipkgmgr_luna_methods[] = {
+		{"rescan",ipkgmgr_luna_rescan},
+		{0,0}
+};
+
 bool ipkgmgr_register_category(char *category, LSMethod *methods) {
 
 	bool retVal = TRUE;
@@ -367,6 +392,8 @@ bool ipkgmgr_init() {
 	if (!ipkgmgr_register_category("/commands",ipkgmgr_command_methods))
 		goto fail;
 	if (!ipkgmgr_register_category("/feeds",ipkgmgr_feed_methods))
+		goto fail;
+	if (!ipkgmgr_register_category("/luna",ipkgmgr_luna_methods))
 		goto fail;
 
 	return true;
