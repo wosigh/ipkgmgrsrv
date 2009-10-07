@@ -10,9 +10,8 @@
 
 * Format the subscription/callback responses into json.
 
-* Standardize return values, some functions use unix style 
-  (returnValue:0 equals no errors). These should be switched to palm style 
-  (returnValue: true equals no errors).
+* Standardize return values, some functions use unix style (returnValue:0 
+  equals no errors) some use palm style (returnValue: true equals no errors).
   
 * Add confirmation support.
 
