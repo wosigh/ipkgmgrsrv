@@ -24,8 +24,10 @@
 
 int verbose;
 
-LSHandle *lserviceHandle;
-LSPalmService *plserviceHandle;
+LSPalmService *serviceHandle;
+LSHandle *pub_serviceHandle;
+LSHandle *priv_serviceHandle;
+
 
 typedef enum {
 	SUBSCRIPTION_REQUIRED = TRUE,

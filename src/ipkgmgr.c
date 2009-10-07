@@ -80,7 +80,7 @@ void ipkgmgr_process_callback_request(char *category, char *data) {
 	len = asprintf(&jsonResponse, "{[\"%s\"]}",tmp);
 
 	if(jsonResponse) {
-		LSSubscriptionRespond(plserviceHandle, category, jsonResponse, &lserror);
+		LSSubscriptionRespond(serviceHandle, category, jsonResponse, &lserror);
 		free(jsonResponse);
 	}
 
@@ -116,7 +116,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		if (object) {
 			json_get_string(object, "package", &package);
 			if (ipkgcmd!=ipkg_info && !package) {
-				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"package\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"package\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 		}
@@ -127,22 +127,22 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		if (object) {
 			json_get_string(object, "type", &type);
 			if (!type) {
-				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"type\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"type\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 			json_get_string(object, "label", &label);
 			if (!label) {
-				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"label\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"label\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 			json_get_string(object, "url", &url);
 			if (!url) {
-				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"url\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"url\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 		}
 		if (!type || !label || !url) {
-			LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic parameter error\"}", &lserror);
+			LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic parameter error\"}", &lserror);
 			goto finnish;
 		}
 	}
@@ -152,7 +152,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		if (object) {
 			json_get_string(object, "feed_config", &feed_config);
 			if (!feed_config) {
-				LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"feed_config\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"feed_config\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 		}
@@ -224,10 +224,10 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
 
 	if (jsonResponse) {
-		LSMessageReply(lserviceHandle, message, jsonResponse, &lserror);
+		LSMessageReply(pub_serviceHandle, message, jsonResponse, &lserror);
 		free(jsonResponse);
 	} else
-		LSMessageReply(lserviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic error\"}", &lserror);
+		LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic error\"}", &lserror);
 
 	finnish:
 
@@ -338,9 +338,7 @@ static bool ipkgmgr_luna_rescan(LSHandle* lshandle, LSMessage *message, void *ct
 	LSError lserror;
 	LSErrorInit(&lserror);
 
-	LSHandle *handle = LSPalmServiceGetPrivateConnection(plserviceHandle);
-
-	retVal = LSCall(handle, "luna://com.palm.applicationManager/rescan", "{}", ipkgmgr_luna_rescan_handler, NULL, NULL, &lserror);
+	retVal = LSCall(priv_serviceHandle, "luna://com.palm.applicationManager/rescan", "{}", ipkgmgr_luna_rescan_handler, NULL, NULL, &lserror);
 
 	LSErrorFree(&lserror);
 	return TRUE;
@@ -361,7 +359,7 @@ bool ipkgmgr_register_category(char *category, LSMethod *methods) {
 
 	if (verbose)
 		g_message("Registering category: %s", category);
-	retVal = LSPalmServiceRegisterCategory(plserviceHandle, category, methods, NULL, NULL, NULL, &lserror);
+	retVal = LSPalmServiceRegisterCategory(serviceHandle, category, methods, NULL, NULL, NULL, &lserror);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");

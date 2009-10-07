@@ -135,8 +135,9 @@ int main(int argc, char *argv[]) {
 		g_message("Registering service: %s ... ", dbusAddress);
 	}
 
-	retVal = LSRegisterPalmService(dbusAddress, &plserviceHandle, &lserror);
-	lserviceHandle = LSPalmServiceGetPublicConnection(plserviceHandle);
+	retVal = LSRegisterPalmService(dbusAddress, &serviceHandle, &lserror);
+	pub_serviceHandle = LSPalmServiceGetPublicConnection(serviceHandle);
+	priv_serviceHandle = LSPalmServiceGetPrivateConnection(serviceHandle);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");
@@ -154,7 +155,7 @@ int main(int argc, char *argv[]) {
 	if (verbose)
 		g_message("Attaching to GmainLoop ... ");
 
-	retVal = LSGmainAttachPalmService(plserviceHandle, loop, &lserror);
+	retVal = LSGmainAttachPalmService(serviceHandle, loop, &lserror);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");
@@ -172,8 +173,22 @@ int main(int argc, char *argv[]) {
 
 	retVal = ipkgmgr_deinit();
 
-	if (lserviceHandle) {
-		retVal = LSUnregister(lserviceHandle, &lserror);
+	if (pub_serviceHandle) {
+		retVal = LSUnregister(pub_serviceHandle, &lserror);
+		if (!retVal) {
+			LSErrorPrint(&lserror, stderr);
+			LSErrorFree(&lserror);
+		}
+	}
+	if (priv_serviceHandle) {
+		retVal = LSUnregister(priv_serviceHandle, &lserror);
+		if (!retVal) {
+			LSErrorPrint(&lserror, stderr);
+			LSErrorFree(&lserror);
+		}
+	}
+	if (serviceHandle) {
+		retVal = LSUnregisterPalmService(serviceHandle, &lserror);
 		if (!retVal) {
 			LSErrorPrint(&lserror, stderr);
 			LSErrorFree(&lserror);
