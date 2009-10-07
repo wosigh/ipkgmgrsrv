@@ -1,5 +1,11 @@
 * Add better comments (everywhere).
 
+* Fix makefiles so that they build objects.
+
+* Make sure all json responses use keys over arays when possible.
+
+* Make sure subscriptions only reply to the app that requested the info.
+
 * Standardize return values, some functions use unix style 
   (returnValue:0 equals no errors). These should be switched to palm style 
   (returnValue: true equals no errors).
