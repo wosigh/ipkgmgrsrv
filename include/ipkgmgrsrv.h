@@ -25,6 +25,7 @@
 int verbose;
 
 LSHandle *lserviceHandle;
+LSPalmService *plserviceHandle;
 
 typedef enum {
 	SUBSCRIPTION_REQUIRED = TRUE,

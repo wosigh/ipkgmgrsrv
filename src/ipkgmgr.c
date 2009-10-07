@@ -80,7 +80,7 @@ void ipkgmgr_process_callback_request(char *category, char *data) {
 	len = asprintf(&jsonResponse, "{[\"%s\"]}",tmp);
 
 	if(jsonResponse) {
-		LSSubscriptionReply(lserviceHandle, category, jsonResponse, &lserror);
+		LSSubscriptionRespond(plserviceHandle, category, jsonResponse, &lserror);
 		free(jsonResponse);
 	}
 
@@ -336,7 +336,7 @@ bool ipkgmgr_register_category(char *category, LSMethod *methods) {
 
 	if (verbose)
 		g_message("Registering category: %s", category);
-	retVal = LSRegisterCategory(lserviceHandle, category, methods, 0, NULL, &lserror);
+	retVal = LSPalmServiceRegisterCategory(plserviceHandle, category, methods, NULL, NULL, NULL, &lserror);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");

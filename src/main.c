@@ -135,7 +135,8 @@ int main(int argc, char *argv[]) {
 		g_message("Registering service: %s ... ", dbusAddress);
 	}
 
-	retVal = LSRegisterPubPriv(dbusAddress, &lserviceHandle, TRUE, &lserror);
+	retVal = LSRegisterPalmService(dbusAddress, &plserviceHandle, &lserror);
+	lserviceHandle = LSPalmServiceGetPublicConnection(plserviceHandle);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");
@@ -153,7 +154,7 @@ int main(int argc, char *argv[]) {
 	if (verbose)
 		g_message("Attaching to GmainLoop ... ");
 
-	retVal = LSGmainAttach(lserviceHandle, loop, &lserror);
+	retVal = LSGmainAttachPalmService(plserviceHandle, loop, &lserror);
 	if (!retVal) {
 		if (verbose)
 			g_message("Failed.");
