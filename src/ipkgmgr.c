@@ -363,11 +363,41 @@ static bool ipkgmgr_misc_rescan_luna(LSHandle* lshandle, LSMessage *message, voi
 
 static bool ipkgmgr_misc_kill_luna(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
+	bool retVal;
+
+	LSError lserror;
+	LSErrorInit(&lserror);
+
+	int ret = system("killall -HUP LunaSysMgr");
+	if (ret==0)
+		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": true}", &lserror);
+	else
+		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false}", &lserror);
+
+	if (!retVal)
+		LSErrorPrint(&lserror, stderr);
+	LSErrorFree(&lserror);
+
 	return TRUE;
 
 }
 
 static bool ipkgmgr_misc_kill_java(LSHandle* lshandle, LSMessage *message, void *ctx) {
+
+	bool retVal;
+
+	LSError lserror;
+	LSErrorInit(&lserror);
+
+	int ret = system("killall -9 java");
+	if (ret==0)
+		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": true}", &lserror);
+	else
+		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false}", &lserror);
+
+	if (!retVal)
+		LSErrorPrint(&lserror, stderr);
+	LSErrorFree(&lserror);
 
 	return TRUE;
 
