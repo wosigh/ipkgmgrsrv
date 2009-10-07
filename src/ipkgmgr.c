@@ -99,9 +99,20 @@ int ipkgmrg_ipkg_status_callback(char *name, int istatus, char *desc, void *user
 	return 0;
 }
 
-bool ipkgmgr_luna_rescan_handler(LSHandle *sh, LSMessage *reply, void *ctx) {
-	g_message("%s",LSMessageGetPayload(reply));
-	return true;
+bool ipkgmgr_luna_rescan_handler(LSHandle *lshandle, LSMessage *reply, void *ctx) {
+
+	LSError lserror;
+	LSErrorInit(&lserror);
+
+	LSMessage *message = (LSMessage *)ctx;
+	const char *payload = LSMessageGetPayload(reply);
+	LSMessageReply(pub_serviceHandle, message, payload, &lserror);
+	LSMessageUnref(message);
+
+	LSErrorFree(&lserror);
+
+	return TRUE;
+
 }
 
 bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
@@ -334,11 +345,11 @@ LSMethod ipkgmgr_feed_methods[] = {
 
 static bool ipkgmgr_luna_rescan(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
-	bool retVal;
 	LSError lserror;
 	LSErrorInit(&lserror);
 
-	retVal = LSCall(priv_serviceHandle, "luna://com.palm.applicationManager/rescan", "{}", ipkgmgr_luna_rescan_handler, NULL, NULL, &lserror);
+	LSMessageRef(message);
+	LSCall(priv_serviceHandle, "luna://com.palm.applicationManager/rescan", "{}", ipkgmgr_luna_rescan_handler, message, NULL, &lserror);
 
 	LSErrorFree(&lserror);
 	return TRUE;
