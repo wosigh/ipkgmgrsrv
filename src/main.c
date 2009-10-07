@@ -116,9 +116,11 @@ int main(int argc, char *argv[]) {
 
 	verbose = FALSE;
 
+	/* Get any arguments we might want to set at launch */
 	if (getopts(argc,argv)==1)
 		return 1;
 
+	/* Make sure /var/etc/ipkg exists and make it if not */
 	check_ipkg_config_dir();
 
 	bool retVal = TRUE;
@@ -135,6 +137,7 @@ int main(int argc, char *argv[]) {
 		g_message("Registering service: %s ... ", dbusAddress);
 	}
 
+	/* Register as a palm service so we can use bot the public and private bus */
 	retVal = LSRegisterPalmService(dbusAddress, &serviceHandle, &lserror);
 	pub_serviceHandle = LSPalmServiceGetPublicConnection(serviceHandle);
 	priv_serviceHandle = LSPalmServiceGetPrivateConnection(serviceHandle);
@@ -150,11 +153,13 @@ int main(int argc, char *argv[]) {
 	if (!retVal)
 		goto error;
 
+	/* Register all the LSMethods */
 	retVal = ipkgmgr_init();
 
 	if (verbose)
 		g_message("Attaching to GmainLoop ... ");
 
+	/* Attach to the GLib main loop */
 	retVal = LSGmainAttachPalmService(serviceHandle, loop, &lserror);
 	if (!retVal) {
 		if (verbose)
@@ -171,6 +176,7 @@ int main(int argc, char *argv[]) {
 		LSErrorFree(&lserror);
 	}
 
+	/* Do a little cleanup */
 	retVal = ipkgmgr_deinit();
 
 	if (pub_serviceHandle) {

@@ -30,6 +30,9 @@
 
 #include <glib.h>
 
+/*
+ * Figure out if a mount point is mounted with (rw) or (ro)
+ */
 bool get_mountpoint_writability(char *mountpoint) {
 
 	FILE *fp;
@@ -66,6 +69,9 @@ bool get_mountpoint_writability(char *mountpoint) {
 
 }
 
+/*
+ * Remount a mountpoint (rw) or (ro)
+ */
 bool set_mountpoint_writability(char *mountpoint, bool writable) {
 
 	int ret = 0;
@@ -82,6 +88,9 @@ bool set_mountpoint_writability(char *mountpoint, bool writable) {
 
 }
 
+/*
+ * Detect if current device is the Palm Nova-SDK (emulator)
+ */
 bool is_emulator() {
 
 	bool ret = false;
@@ -115,6 +124,9 @@ bool is_emulator() {
 
 }
 
+/*
+ * Check path points to a directory
+ */
 int is_directory(char *path) {
 
 	struct stat sb;
@@ -129,6 +141,9 @@ int is_directory(char *path) {
 
 }
 
+/*
+ * List files by extension and format output directly into JSON
+ */
 char *JSON_list_files_in_dir(char *dir, char *file_suffix) {
 
 	int len = 0;
@@ -162,6 +177,9 @@ char *JSON_list_files_in_dir(char *dir, char *file_suffix) {
 
 }
 
+/*
+ * Create or append a feed entry to a feed config file
+ */
 int add_feed_config(char *feed_config, char *type, char *label, char *url, bool verbose) {
 	int ret = -1;
 	int len = 0;
@@ -217,6 +235,9 @@ int add_feed_config(char *feed_config, char *type, char *label, char *url, bool 
 	return ret;
 }
 
+/*
+ * Remove a feed config file
+ */
 int remove_feed_config(char *feed_config, bool verbose) {
 	int ret = -1;
 	int len = 0;
@@ -239,6 +260,10 @@ int remove_feed_config(char *feed_config, bool verbose) {
 	return ret;
 }
 
+/*
+ * If file ends with .config add .disabled, if file ends with .disabled, remove
+ * .disabled.
+ */
 int toggle_feed_config(char *feed_config, bool verbose) {
 	int ret = -1;
 	char *config = 0;
