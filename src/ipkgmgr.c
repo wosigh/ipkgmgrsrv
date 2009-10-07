@@ -99,7 +99,7 @@ int ipkgmrg_ipkg_status_callback(char *name, int istatus, char *desc, void *user
 	return 0;
 }
 
-bool ipkgmgr_luna_rescan_handler(LSHandle *lshandle, LSMessage *reply, void *ctx) {
+bool ipkgmgr_response_relay_handler(LSHandle *lshandle, LSMessage *reply, void *ctx) {
 
 	LSError lserror;
 	LSErrorInit(&lserror);
@@ -343,21 +343,72 @@ LSMethod ipkgmgr_feed_methods[] = {
 		{0,0}
 };
 
-static bool ipkgmgr_luna_rescan(LSHandle* lshandle, LSMessage *message, void *ctx) {
+static bool ipkgmgr_misc_rescan_luna(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
 	LSError lserror;
 	LSErrorInit(&lserror);
 
-	LSMessageRef(message);
-	LSCall(priv_serviceHandle, "luna://com.palm.applicationManager/rescan", "{}", ipkgmgr_luna_rescan_handler, message, NULL, &lserror);
+	bool retVal = false;
 
+	LSMessageRef(message);
+	retVal = LSCall(priv_serviceHandle, "luna://com.palm.applicationManager/rescan", "{}", ipkgmgr_response_relay_handler, message, NULL, &lserror);
+
+	if (!retVal)
+		LSErrorPrint(&lserror, stderr);
 	LSErrorFree(&lserror);
+
 	return TRUE;
 
 }
 
-LSMethod ipkgmgr_luna_methods[] = {
-		{"rescan",ipkgmgr_luna_rescan},
+static bool ipkgmgr_misc_kill_luna(LSHandle* lshandle, LSMessage *message, void *ctx) {
+
+	return TRUE;
+
+}
+
+static bool ipkgmgr_misc_kill_java(LSHandle* lshandle, LSMessage *message, void *ctx) {
+
+	return TRUE;
+
+}
+
+static bool ipkgmgr_misc_machine_reboot(LSHandle* lshandle, LSMessage *message, void *ctx) {
+
+	LSError lserror;
+	LSErrorInit(&lserror);
+
+	bool retVal = false;
+	int len = 0;
+	char *reason = 0, *jsonResponse = 0;
+	json_t *object = LSMessageGetPayloadJSON(message);
+	json_get_string(object, "reason", &reason);
+
+	if (!reason)
+		reason = "User initiated / IPKG Manager Service";
+
+	len = asprintf(&jsonResponse, "{\"reason\":\"%s\"}", reason);
+	if (jsonResponse) {
+		LSMessageRef(message);
+		retVal = LSCall(priv_serviceHandle, "luna://com.palm.power/shutdown/machineReboot", jsonResponse, ipkgmgr_response_relay_handler, message, NULL, &lserror);
+		free(jsonResponse);
+	} else {
+		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic error\"}", &lserror);
+	}
+
+	if (!retVal)
+		LSErrorPrint(&lserror, stderr);
+	LSErrorFree(&lserror);
+
+	return TRUE;
+
+}
+
+LSMethod ipkgmgr_misc_methods[] = {
+		{"rescan_luna",ipkgmgr_misc_rescan_luna},
+		{"kill_luna",ipkgmgr_misc_kill_luna},
+		{"kill_java",ipkgmgr_misc_kill_java},
+		{"machine_reboot",ipkgmgr_misc_machine_reboot},
 		{0,0}
 };
 
@@ -402,7 +453,7 @@ bool ipkgmgr_init() {
 		goto fail;
 	if (!ipkgmgr_register_category("/feeds",ipkgmgr_feed_methods))
 		goto fail;
-	if (!ipkgmgr_register_category("/luna",ipkgmgr_luna_methods))
+	if (!ipkgmgr_register_category("/misc",ipkgmgr_misc_methods))
 		goto fail;
 
 	return true;
