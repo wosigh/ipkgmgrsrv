@@ -556,6 +556,9 @@ LSMethod ipkgmgr_misc_methods[] = {
 		{ "kill_java", ipkgmgr_misc_kill_java }, { "machine_reboot",
 				ipkgmgr_misc_machine_reboot }, { 0, 0 } };
 
+/*
+ * Register a struct of LSMethod's under a particular category.
+ */
 bool ipkgmgr_register_category(char *category, LSMethod *methods) {
 
 	bool retVal = TRUE;
@@ -585,6 +588,10 @@ bool ipkgmgr_register_category(char *category, LSMethod *methods) {
 
 }
 
+/*
+ * Setup libipkg usage and register each group of LSMethod's in the
+ * correct catalog.
+ */
 bool ipkgmgr_init() {
 
 	ipkg_cb_message = ipkgmgr_ipkg_message_callback;
@@ -594,10 +601,13 @@ bool ipkgmgr_init() {
 
 	if (!ipkgmgr_register_category("/callbacks", ipkgmgr_callback_methods))
 		goto fail;
+	/* Standard ipkg commands: update/info/install/remove */
 	if (!ipkgmgr_register_category("/commands", ipkgmgr_command_methods))
 		goto fail;
+	/* Feed manipulations: list/add/remove/toggle */
 	if (!ipkgmgr_register_category("/feeds", ipkgmgr_feed_methods))
 		goto fail;
+	/* Misc actions: luna_rescan/kill_luna/kill_java/rebootMachine */
 	if (!ipkgmgr_register_category("/misc", ipkgmgr_misc_methods))
 		goto fail;
 
