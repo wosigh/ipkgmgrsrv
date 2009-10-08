@@ -72,7 +72,7 @@ CCDEPMODE = depmode=none
 CFLAGS = -march=armv7-a -mtune=cortex-a8 -Os -fPIC -g -Wall -D_GNU_SOURCE -DIPKG_LIB  -I/usr/arm-none-linux-gnueabi/usr/include/ -I/usr/arm-none-linux-gnueabi/include/ -L/usr/arm-none-linux-gnueabi/lib -L/usr/arm-none-linux-gnueabi/usr/lib -Xlinker -rpath-link=/usr/arm-none-linux-gnueabi/usr/lib -I/usr/arm-none-linux-gnueabi/usr/include/mjson -I/usr/arm-none-linux-gnueabi/usr/include/glib-2.0 -I/usr/arm-none-linux-gnueabi/usr/lib/glib-2.0/include -Iinclude -Iinclude/liblunaservice -L. -DVERSION=\"$(VERSION)\"
 CPPFLAGS = 
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"ipkgmgrsrv\" -DPACKAGE_TARNAME=\"ipkgmgrsrv\" -DPACKAGE_VERSION=\"0.0.1\" -DPACKAGE_STRING=\"ipkgmgrsrv\ 0.0.1\" -DPACKAGE_BUGREPORT=\"rmh3093@gmail.com\" -DPACKAGE=\"ipkgmgrsrv\" -DVERSION=\"0.0.1\"
+DEFS = -DPACKAGE_NAME=\"ipkgmgrsrv\" -DPACKAGE_TARNAME=\"ipkgmgrsrv\" -DPACKAGE_VERSION=\"0.0.1\" -DPACKAGE_STRING=\"ipkgmgrsrv\ 0.0.1\" -DPACKAGE_BUGREPORT=\"http://www.webos-internals.org\" -DPACKAGE=\"ipkgmgrsrv\" -DVERSION=\"0.0.1\"
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -94,7 +94,7 @@ MAKEINFO = ${SHELL} /home/rmh3093/workspace-palmpre/ipkgmgrsrv/missing --run mak
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = ipkgmgrsrv
-PACKAGE_BUGREPORT = rmh3093@gmail.com
+PACKAGE_BUGREPORT = http://www.webos-internals.org
 PACKAGE_NAME = ipkgmgrsrv
 PACKAGE_STRING = ipkgmgrsrv 0.0.1
 PACKAGE_TARNAME = ipkgmgrsrv

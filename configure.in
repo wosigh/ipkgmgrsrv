@@ -1,4 +1,4 @@
-AC_INIT([ipkgmgrsrv],[0.0.1],[rmh3093@gmail.com],[ipkgmgrsrv])
+AC_INIT([ipkgmgrsrv],[0.0.1],[http://www.webos-internals.org],[ipkgmgrsrv])
 
 AC_CANONICAL_TARGET
 AC_CONFIG_AUX_DIR([.])

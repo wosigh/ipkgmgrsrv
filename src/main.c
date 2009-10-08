@@ -25,7 +25,7 @@
 #include "ipkgmgr.h"
 #include "utils.h"
 
-const char *dbusAddress = "us.ryanhope.ipkgmgrsrv";
+const char *dbusAddress = "org.webosinternals.ipkgmgrsrv";
 
 static struct option long_options[] =   {
 		{"help", no_argument, 0, 'h'},
