@@ -1,4 +1,4 @@
-/*==============================================================================
+/*=============================================================================
  Copyright (C) 2009 Ryan Hope <rmh3093@gmail.com>
  Copyright (C) 2009 WebOS Internals <http://www.webos-internals.org/>
 
@@ -15,7 +15,7 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-==============================================================================*/
+ =============================================================================*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,12 +27,9 @@
 
 const char *dbusAddress = "org.webosinternals.ipkgmgrsrv";
 
-static struct option long_options[] =   {
-		{"help", no_argument, 0, 'h'},
-		{"verbose", no_argument, 0, 'v'},
-		{"version", no_argument, 0, 'V'},
-		{0, 0, 0, 0}
-};
+static struct option long_options[] = { { "help", no_argument, 0, 'h' }, {
+		"verbose", no_argument, 0, 'v' }, { "version", no_argument, 0, 'V' }, {
+		0, 0, 0, 0 } };
 
 void print_version() {
 	printf("IPKG Manager Service %s\n", VERSION);
@@ -40,14 +37,11 @@ void print_version() {
 
 void print_help(char *argv[]) {
 
-	printf(
-			"Usage: %s [OPTION]...\n\n"
-			"Miscellaneous:\n"
-			"  -h, --help\t\tprint help information and exit\n"
-			"  -v, --verbose\t\tturn on verbose output\n"
-			"  -V, --version\t\tprint version information and exit\n",
-			argv[0]
-	);
+	printf("Usage: %s [OPTION]...\n\n"
+		"Miscellaneous:\n"
+		"  -h, --help\t\tprint help information and exit\n"
+		"  -v, --verbose\t\tturn on verbose output\n"
+		"  -V, --version\t\tprint version information and exit\n", argv[0]);
 
 }
 
@@ -57,14 +51,27 @@ int getopts(int argc, char *argv[]) {
 
 	while (1) {
 		int option_index = 0;
-		c = getopt_long (argc, argv, "vVh", long_options, &option_index);
-		if (c == -1) break;
+		c = getopt_long(argc, argv, "vVh", long_options, &option_index);
+		if (c == -1)
+			break;
 		switch (c) {
-		case 'v': verbose = 1; break;
-		case 'V': print_version(); retVal = 1; break;
-		case 'h': print_help(argv); retVal = 1; break;
-		case '?': print_help(argv); retVal = 1; break;
-		default: abort();
+		case 'v':
+			verbose = 1;
+			break;
+		case 'V':
+			print_version();
+			retVal = 1;
+			break;
+		case 'h':
+			print_help(argv);
+			retVal = 1;
+			break;
+		case '?':
+			print_help(argv);
+			retVal = 1;
+			break;
+		default:
+			abort();
 		}
 	}
 	return retVal;
@@ -77,17 +84,17 @@ void check_ipkg_config_dir() {
 		g_message("Checking for directory /var/etc/ipkg ...");
 
 	int i = is_directory("/var/etc/ipkg");
-	if (i>0) {
+	if (i > 0) {
 		if (verbose)
 			g_message("Succeeded.");
 	} else {
 		if (verbose)
 			g_message("Failed.");
-		if (i==0) {
+		if (i == 0) {
 			if (verbose)
 				g_message("Attempting to remove non-direcotry /var/etc/ipkg");
 			i = remove("/var/etc/ipkg");
-			if (i==0) {
+			if (i == 0) {
 				if (verbose)
 					g_message("Succeeded.");
 			} else {
@@ -100,7 +107,7 @@ void check_ipkg_config_dir() {
 		if (verbose)
 			g_message("Creating directory: /var/etc/ipkg");
 		static mode_t mode = 0777;
-		if (mkdir("/var/etc/ipkg",mode)==0) {
+		if (mkdir("/var/etc/ipkg", mode) == 0) {
 			if (verbose)
 				g_message("Succeeded.");
 			else {
@@ -117,7 +124,7 @@ int main(int argc, char *argv[]) {
 	verbose = FALSE;
 
 	/* Get any arguments we might want to set at launch */
-	if (getopts(argc,argv)==1)
+	if (getopts(argc, argv) == 1)
 		return 1;
 
 	/* Make sure /var/etc/ipkg exists and make it if not */
