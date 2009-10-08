@@ -67,6 +67,7 @@ int doOfflineAction(char *package, char *extension) {
 }
 
 void ipkgmgr_process_callback_request(char *category, char *data) {
+
 	LSError lserror;
 	LSErrorInit(&lserror);
 
@@ -85,6 +86,7 @@ void ipkgmgr_process_callback_request(char *category, char *data) {
 	}
 
 	LSErrorFree(&lserror);
+
 }
 
 int ipkgmgr_ipkg_message_callback(ipkg_conf_t *conf, message_level_t level, char *msg) {
@@ -93,10 +95,36 @@ int ipkgmgr_ipkg_message_callback(ipkg_conf_t *conf, message_level_t level, char
 	return 0;
 }
 
-int ipkgmrg_ipkg_status_callback(char *name, int istatus, char *desc, void *userdata) {
+int ipkgmrg_ipkg_info_callback(char *name, int istatus, char *desc, void *userdata) {
+
 	count++;
-	ipkgmgr_process_callback_request("/callbacks/status", desc);
+
+	LSError lserror;
+	LSErrorInit(&lserror);
+
+	char *d1 = ":";
+	char *d2 = "\n";
+
+	char *key = strtok(desc,d1);
+	char *value = strtok(NULL,d2);
+
+	int len = 0;
+	char *tmp = 0;
+	while (key!=NULL && value!=NULL) {
+		if (value[0]=='{')
+			len = asprintf(&tmp, "\"%s\":%s", key, value);
+		else
+			len = asprintf(&tmp, "\"%s\":\"%s\"", key, value);
+		LSSubscriptionRespond(serviceHandle, "/callbacks/status", tmp, &lserror);
+		free(tmp);
+		key = strtok(NULL,d1);
+		value = strtok(NULL,d2);
+	}
+
+	LSErrorFree(&lserror);
+
 	return 0;
+
 }
 
 bool ipkgmgr_response_relay_handler(LSHandle *lshandle, LSMessage *reply, void *ctx) {
@@ -179,7 +207,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 
 	switch (ipkgcmd) {
 	case ipkg_update: val = ipkg_lists_update(&args); break;
-	case ipkg_info: val = ipkg_packages_info(&args, package,ipkgmrg_ipkg_status_callback,NULL); break;
+	case ipkg_info: val = ipkg_packages_info(&args, package,ipkgmrg_ipkg_info_callback,message); break;
 	case ipkg_install: {
 		val = ipkg_packages_install(&args, package);
 		if (val==0) {
