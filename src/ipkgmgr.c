@@ -99,6 +99,8 @@ int ipkgmrg_ipkg_info_callback(char *name, int istatus, char *desc, void *userda
 
 	count++;
 
+	LSMessage *message = (LSMessage *)userdata;
+
 	LSError lserror;
 	LSErrorInit(&lserror);
 
@@ -125,7 +127,7 @@ int ipkgmrg_ipkg_info_callback(char *name, int istatus, char *desc, void *userda
 	len = asprintf(&tmp, "{%s}", jsonResponse);
 	free(jsonResponse);
 
-	LSSubscriptionRespond(serviceHandle, "/callbacks/status", tmp, &lserror);
+	LSMessageReply(pub_serviceHandle,message,tmp,&lserror);
 	free(tmp);
 
 	LSErrorFree(&lserror);
@@ -316,13 +318,8 @@ static bool ipkgmgr_callback_message(LSHandle* lshandle, LSMessage *message, voi
 	return ipkgmgr_process_request(lshandle,message,-1,SUBSCRIPTION_REQUIRED);
 }
 
-static bool ipkgmgr_callback_status(LSHandle* lshandle, LSMessage *message, void *ctx) {
-	return ipkgmgr_process_request(lshandle,message,-1,SUBSCRIPTION_REQUIRED);
-}
-
 LSMethod ipkgmgr_callback_methods[] = {
 		{"message",ipkgmgr_callback_message},
-		{"status",ipkgmgr_callback_status},
 		{0,0}
 };
 
