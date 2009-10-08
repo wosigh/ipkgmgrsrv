@@ -105,21 +105,28 @@ int ipkgmrg_ipkg_info_callback(char *name, int istatus, char *desc, void *userda
 	char *d1 = ":";
 	char *d2 = "\n";
 
-	char *key = strtok(desc,d1);
-	char *value = strtok(NULL,d2);
-
-	int len = 0;
 	char *tmp = 0;
-	while (key!=NULL && value!=NULL) {
+	char *jsonResponse = 0;
+
+	char *key = strtok(desc,d1);
+	char *value = strtok(NULL,d2)+1;
+	int len = asprintf(&jsonResponse, "\"%s\":\"%s\"", key, value);
+
+	while ((key=strtok(NULL,d1))!=NULL && (value=strtok(NULL,d2)+1)!=NULL) {
 		if (value[0]=='{')
-			len = asprintf(&tmp, "\"%s\":%s", key, value);
+			len = asprintf(&tmp, "%s,\"%s\":%s", jsonResponse, key, value);
 		else
-			len = asprintf(&tmp, "\"%s\":\"%s\"", key, value);
-		LSSubscriptionRespond(serviceHandle, "/callbacks/status", tmp, &lserror);
+			len = asprintf(&tmp, "%s,\"%s\":\"%s\"", jsonResponse, key, value);
+		free(jsonResponse);
+		jsonResponse = strdup(tmp);
 		free(tmp);
-		key = strtok(NULL,d1);
-		value = strtok(NULL,d2);
 	}
+
+	len = asprintf(&tmp, "{%s}", jsonResponse);
+	free(jsonResponse);
+
+	LSSubscriptionRespond(serviceHandle, "/callbacks/status", tmp, &lserror);
+	free(tmp);
 
 	LSErrorFree(&lserror);
 
