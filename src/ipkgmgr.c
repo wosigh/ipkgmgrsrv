@@ -142,8 +142,16 @@ bool ipkgmgr_response_relay_handler(LSHandle *lshandle, LSMessage *reply, void *
 	LSErrorInit(&lserror);
 
 	LSMessage *message = (LSMessage *)ctx;
-	const char *payload = LSMessageGetPayload(reply);
-	LSMessageReply(pub_serviceHandle, message, payload, &lserror);
+	json_t *object = LSMessageGetPayloadJSON(reply);
+
+	bool returnValue = false;
+	json_get_bool(object,"returnValue",returnValue);
+
+	if (returnValue)
+		LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":0}", &lserror);
+	else
+		LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1}", &lserror);
+
 	LSMessageUnref(message);
 
 	LSErrorFree(&lserror);
@@ -164,7 +172,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		if (object) {
 			json_get_string(object, "package", &package);
 			if (ipkgcmd!=ipkg_info && !package) {
-				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"package\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Parameter \"package\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 		}
@@ -175,22 +183,22 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		if (object) {
 			json_get_string(object, "type", &type);
 			if (!type) {
-				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"type\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Parameter \"type\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 			json_get_string(object, "label", &label);
 			if (!label) {
-				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"label\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Parameter \"label\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 			json_get_string(object, "url", &url);
 			if (!url) {
-				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"url\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Parameter \"url\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 		}
 		if (!type || !label || !url) {
-			LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic parameter error\"}", &lserror);
+			LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Generic parameter error\"}", &lserror);
 			goto finnish;
 		}
 	}
@@ -200,7 +208,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		if (object) {
 			json_get_string(object, "feed_config", &feed_config);
 			if (!feed_config) {
-				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Parameter \"feed_config\" required and not found\"}", &lserror);
+				LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Parameter \"feed_config\" required and not found\"}", &lserror);
 				goto finnish;
 			}
 		}
@@ -267,7 +275,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 			len = asprintf(&jsonResponse,"{\"returnValue\":0,\"disabledFeeds\":%s}",disabled_feeds);
 			free(disabled_feeds);
 		} else
-			len = asprintf(&jsonResponse,"{\"returnValue\":1}");
+			len = asprintf(&jsonResponse,"{\"returnValue\":-1}");
 	} else
 		len = asprintf(&jsonResponse,"{\"returnValue\":%d}",val);
 
@@ -275,7 +283,7 @@ bool ipkgmgr_reply(LSHandle* lshandle, LSMessage *message, ipkgcmd_t ipkgcmd) {
 		LSMessageReply(pub_serviceHandle, message, jsonResponse, &lserror);
 		free(jsonResponse);
 	} else
-		LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic error\"}", &lserror);
+		LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Generic error\"}", &lserror);
 
 	finnish:
 
@@ -293,7 +301,7 @@ bool ipkgmgr_process_request(LSHandle* lshandle, LSMessage *message, ipkgcmd_t i
 
 	if (!LSMessageIsSubscription(message)) {
 		if (subscription_required)
-			retVal = LSMessageReply(lshandle, message, "{\"returnValue\": false, \"errorText\": \"Subscription required\"}", &lserror);
+			retVal = LSMessageReply(lshandle, message, "{\"returnValue\":-1,\"errorText\":\"Subscription required\"}", &lserror);
 		else
 			retVal = ipkgmgr_reply(lshandle, message, ipkgcmd);
 	} else {
@@ -303,7 +311,7 @@ bool ipkgmgr_process_request(LSHandle* lshandle, LSMessage *message, ipkgcmd_t i
 			g_message("Subscription process failed.");
 			LSErrorPrint(&lserror, stderr);
 			retVal = LSMessageReply(lshandle, message,
-					"{\"returnValue\": false, \"errorText\": \"Subscription error\"}", &lserror);
+					"{\"returnValue\":-1,\"errorText\":\"Subscription error\"}", &lserror);
 			if (!retVal) {
 				LSErrorPrint(&lserror, stderr);
 			}
@@ -395,19 +403,19 @@ static bool ipkgmgr_misc_rescan_luna(LSHandle* lshandle, LSMessage *message, voi
 
 static bool ipkgmgr_misc_kill_luna(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
-	bool retVal;
-
 	LSError lserror;
 	LSErrorInit(&lserror);
 
-	int ret = system("killall -HUP LunaSysMgr");
-	if (ret==0)
-		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": true}", &lserror);
-	else
-		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false}", &lserror);
+	char *jsonResponse = 0;
+	int len = 0;
+	len = asprintf(&jsonResponse,"{\"returnValue\":%d}",system("killall -HUP LunaSysMgr"));
 
-	if (!retVal)
-		LSErrorPrint(&lserror, stderr);
+	if (jsonResponse) {
+		if (!LSMessageReply(pub_serviceHandle, message, jsonResponse, &lserror))
+			LSErrorPrint(&lserror, stderr);
+		free(jsonResponse);
+	}
+
 	LSErrorFree(&lserror);
 
 	return TRUE;
@@ -416,19 +424,19 @@ static bool ipkgmgr_misc_kill_luna(LSHandle* lshandle, LSMessage *message, void 
 
 static bool ipkgmgr_misc_kill_java(LSHandle* lshandle, LSMessage *message, void *ctx) {
 
-	bool retVal;
-
 	LSError lserror;
 	LSErrorInit(&lserror);
 
-	int ret = system("killall -9 java");
-	if (ret==0)
-		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": true}", &lserror);
-	else
-		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false}", &lserror);
+	char *jsonResponse = 0;
+	int len = 0;
+	len = asprintf(&jsonResponse,"{\"returnValue\":%d}",system("killall -9 java"));
 
-	if (!retVal)
-		LSErrorPrint(&lserror, stderr);
+	if (jsonResponse) {
+		if (!LSMessageReply(pub_serviceHandle, message, jsonResponse, &lserror))
+			LSErrorPrint(&lserror, stderr);
+		free(jsonResponse);
+	}
+
 	LSErrorFree(&lserror);
 
 	return TRUE;
@@ -455,7 +463,7 @@ static bool ipkgmgr_misc_machine_reboot(LSHandle* lshandle, LSMessage *message, 
 		retVal = LSCall(priv_serviceHandle, "luna://com.palm.power/shutdown/machineReboot", jsonResponse, ipkgmgr_response_relay_handler, message, NULL, &lserror);
 		free(jsonResponse);
 	} else {
-		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\": false, \"errorText\": \"Generic error\"}", &lserror);
+		retVal = LSMessageReply(pub_serviceHandle, message, "{\"returnValue\":-1,\"errorText\":\"Generic error\"}", &lserror);
 	}
 
 	if (!retVal)
